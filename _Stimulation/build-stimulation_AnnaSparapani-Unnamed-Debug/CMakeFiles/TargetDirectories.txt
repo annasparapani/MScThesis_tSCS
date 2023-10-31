@@ -1,0 +1,4 @@
+/home/fes/Scrivania/prova_AS/build-stimulation_AnnaSparapani-Unnamed-Debug/CMakeFiles/rebuild_cache.dir
+/home/fes/Scrivania/prova_AS/build-stimulation_AnnaSparapani-Unnamed-Debug/CMakeFiles/edit_cache.dir
+/home/fes/Scrivania/prova_AS/build-stimulation_AnnaSparapani-Unnamed-Debug/CMakeFiles/stimulation_AnnaSparapani.dir
+/home/fes/Scrivania/prova_AS/build-stimulation_AnnaSparapani-Unnamed-Debug/CMakeFiles/stimulation_AnnaSparapani_autogen.dir

@@ -1,0 +1,68 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "stimulation_AnnaSparapani",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "stimulation_AnnaSparapani::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-stimulation_AnnaSparapani-Debug-9229c23d8d854cac6008.json",
+					"name" : "stimulation_AnnaSparapani",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "stimulation_AnnaSparapani_autogen::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-stimulation_AnnaSparapani_autogen-Debug-924cbbb1b9984a0601f3.json",
+					"name" : "stimulation_AnnaSparapani_autogen",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/fes/Scrivania/prova_AS/build-stimulation_AnnaSparapani-Unnamed-Debug",
+		"source" : "/home/fes/Scrivania/prova_AS/stimulation_AnnaSparapani"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 2
+	}
+}
