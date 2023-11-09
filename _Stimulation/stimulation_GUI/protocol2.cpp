@@ -1,5 +1,6 @@
 #include "protocol2.h"
 #include "ui_protocol2.h"
+#include "globals.h"
 #include "headers.h"
 
 

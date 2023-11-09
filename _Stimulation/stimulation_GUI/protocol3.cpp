@@ -1,5 +1,6 @@
 #include "protocol3.h"
 #include "ui_protocol3.h"
+#include "globals.h"
 #include "headers.h"
 
 Protocol3::Protocol3(QWidget *parent) :

@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+
+#include "globals.h"
 #include "headers.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -12,12 +14,12 @@ MainWindow::MainWindow(QWidget *parent)
    connect(ui->Button_2CloseStim, &QPushButton::clicked, this, &MainWindow::openProtocol2);
    connect(ui->Button_Ramp, &QPushButton::clicked, this, &MainWindow::openProtocol3);
    connect(ui->Button_ContinuousStim, &QPushButton::clicked, this, &MainWindow::openProtocol4);
-
-}
+ }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+
 }
 
 void MainWindow::closeApplication(){
@@ -47,3 +49,4 @@ void MainWindow::openProtocol4(){
     static Protocol4 *myProtocol4 = new Protocol4(this);
     myProtocol4->show();
 }
+

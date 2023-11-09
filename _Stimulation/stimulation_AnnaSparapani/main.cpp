@@ -36,7 +36,7 @@ int thisCurrent = 0;
 // single stimuli
 int interStimDistance = 2000; //[ms] (2 s)
 int totNumberStimuli = 10;
-int minCurrent = 30; //[mA]
+int minCurrent = 10; //[mA]
 int maxCurrent = 100; //[mA] - safety measure: ramp interrupted whenever subject wants
 
 // 2 close stimuli
@@ -354,9 +354,9 @@ int main()
 
     running = true;
 
-    //pthread_create(&thread, NULL, threadTenSingleStim, nullptr);
+    pthread_create(&thread, NULL, threadTenSingleStim, nullptr);
 
-    pthread_create(&thread, NULL, threadCloseStimuli, nullptr);
+   // pthread_create(&thread, NULL, threadCloseStimuli, nullptr);
 
 //    pthread_create(&thread, NULL, threadPeriodicStim_ramp, nullptr);
 

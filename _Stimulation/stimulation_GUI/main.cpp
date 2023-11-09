@@ -21,8 +21,8 @@ The code only deliver the stimulation, data analysis is perfomed on EMG
 data on MATLAB.
 */
 
-#include "mainwindow.h"
 #include "globals.h"
+#include "headers.h"
 
 #include <QApplication>
 
@@ -31,15 +31,12 @@ data on MATLAB.
 ******** GLOBAL VARIABLES ************
 ***************************************/
 
-
-//int current=5; // global variable to be written on by the GUI and sent to the thread
-
-
-
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    MainWindow w;
+    MainWindow w;    
     w.show();
     return a.exec();
+
 }
+

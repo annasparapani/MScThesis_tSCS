@@ -14,6 +14,7 @@ class Protocol1 : public QDialog
 public:
     explicit Protocol1(QWidget *parent = nullptr);
     ~Protocol1();
+    void updateLCD();
 
 private:
     Ui::Protocol1 *ui;
@@ -22,6 +23,7 @@ private slots:
     void backHome();
     void startClicked();
     void stopClicked();
+
 };
 
 #endif // PROTOCOL1_H

@@ -47,7 +47,10 @@ set(PROJECT_SOURCES
         protocol4.cpp
         protocol4.h
         protocol4.ui
-
+        stimulator.h
+        stimulator.cpp
+        stim_thread.cpp
+        stim_thread.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -66,4 +69,12 @@ else()
     endif()
 endif()
 
-target_link_libraries(stimulation_GUI PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+add_library(libsmpt STATIC IMPORTED)
+set_target_properties(libsmpt PROPERTIES
+    IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/libsmpt.a)
+
+target_link_libraries(stimulation_GUI rt pthread libsmpt libconfig++.a)
+target_link_libraries(stimulation_GUI Qt${QT_VERSION_MAJOR}::Widgets)
+
+
+#target_link_libraries(stimulation_GUI PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)

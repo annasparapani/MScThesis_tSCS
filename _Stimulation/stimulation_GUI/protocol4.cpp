@@ -1,5 +1,6 @@
 #include "protocol4.h"
 #include "ui_protocol4.h"
+#include "globals.h"
 #include "headers.h"
 
 Protocol4::Protocol4(QWidget *parent) :

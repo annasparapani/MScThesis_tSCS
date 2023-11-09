@@ -22,6 +22,5 @@ private:
     void openProtocol2(); // declaration of function to open protocol 2 window from mainwindow
     void openProtocol3(); // declaration of function to open protocol 3 window from mainwindow
     void openProtocol4(); // declaration of function to open protocol 4 window from mainwindow
-
 };
 #endif // MAINWINDOW_H

@@ -127,7 +127,7 @@ p, li { white-space: pre-wrap; }
     </rect>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>70</x>
@@ -159,6 +159,22 @@ Amplitude (mA)</string>
      <widget class="QDoubleSpinBox" name="SpinBox_Increment"/>
     </item>
    </layout>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_StimState">
+   <property name="geometry">
+    <rect>
+     <x>330</x>
+     <y>330</y>
+     <width>171</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Laksaman</family>
+     <pointsize>15</pointsize>
+    </font>
+   </property>
   </widget>
  </widget>
  <resources/>
