@@ -10,9 +10,10 @@ Protocol1::Protocol1(QWidget *parent) :
     ui->setupUi(this);
     myThread = new stim_Thread(this);
     // SET DEFAULT VALUES
-    ui->SpinBox_CurrentAmplitude->setValue(10); // set the default current value to 10
-    ui->SpinBox_Increment->setValue(2);
+    ui->SpinBox_CurrentAmplitude->setValue(current); // set the default current value to 10
+    ui->SpinBox_Increment->setValue(current_increment);
     ui->Button_Stop->setEnabled(false);
+    ui->SpinBox_ISD->setValue(interstimulus_distance/1000);
 
     // CONNECT BUTTONS
     connect(ui->Button_Home, &QPushButton::clicked, this, &Protocol1::backHome);
@@ -36,10 +37,13 @@ void Protocol1::backHome(){
 void Protocol1::startClicked(){
     current=ui->SpinBox_CurrentAmplitude->value(); //copy the values set in the spin boxes in the global variables
     current_increment=ui->SpinBox_Increment->value();
+    interstimulus_distance=ui->SpinBox_ISD->value();
+    interstimulus_distance=interstimulus_distance*1000;
 
     // enable and disable objects
     ui->SpinBox_CurrentAmplitude->setEnabled(false); //disable the spin boxes to set the current and increment
     ui->SpinBox_Increment->setEnabled(false);
+    ui->SpinBox_ISD->setEnabled(false);
     ui->Button_Stop->setEnabled(true);
     ui->Button_Start->setEnabled(false);
     ui->Button_Home->setEnabled(false);
@@ -51,7 +55,7 @@ void Protocol1::startClicked(){
     protocol=1; // set global variable protocol to enter the correct thread case to 1
     myThread->stimulating=true;
     myThread->start(); // open the thread (using federica's code)
-    ui->lineEdit_StimState->setText("Running Stimulation");
+
 }
 
 void Protocol1::stopClicked(){
@@ -60,13 +64,13 @@ void Protocol1::stopClicked(){
     // enable and disable objects
     ui->SpinBox_CurrentAmplitude->setEnabled(true);
     ui->SpinBox_Increment->setEnabled(true);
+    ui->SpinBox_ISD->setEnabled(false);
     ui->Button_Start->setEnabled(true);
     ui->Button_Stop->setEnabled(false);
     ui->Button_Home->setEnabled(true);
 
-
     ui->LCD_Current->display(0);
-    ui->lineEdit_StimState->setText("");
+
 }
 
 void Protocol1::updateLCD(){

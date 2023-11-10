@@ -33,7 +33,7 @@ p, li { white-space: pre-wrap; }
   <widget class="QPushButton" name="Button_Home">
    <property name="geometry">
     <rect>
-     <x>430</x>
+     <x>420</x>
      <y>400</y>
      <width>81</width>
      <height>51</height>
@@ -47,8 +47,8 @@ p, li { white-space: pre-wrap; }
   <widget class="QTextBrowser" name="Text_Note">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>410</y>
+     <x>30</x>
+     <y>400</y>
      <width>241</width>
      <height>51</height>
     </rect>
@@ -81,8 +81,8 @@ p, li { white-space: pre-wrap; }
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>130</x>
-     <y>240</y>
+     <x>60</x>
+     <y>300</y>
      <width>251</width>
      <height>71</height>
     </rect>
@@ -107,8 +107,8 @@ p, li { white-space: pre-wrap; }
   <widget class="QLabel" name="Label_currentImposed">
    <property name="geometry">
     <rect>
-     <x>70</x>
-     <y>340</y>
+     <x>340</x>
+     <y>300</y>
      <width>161</width>
      <height>17</height>
     </rect>
@@ -120,8 +120,8 @@ p, li { white-space: pre-wrap; }
   <widget class="QLCDNumber" name="LCD_Current">
    <property name="geometry">
     <rect>
-     <x>240</x>
-     <y>340</y>
+     <x>370</x>
+     <y>330</y>
      <width>64</width>
      <height>23</height>
     </rect>
@@ -160,21 +160,28 @@ Amplitude (mA)</string>
     </item>
    </layout>
   </widget>
-  <widget class="QLineEdit" name="lineEdit_StimState">
+  <widget class="QWidget" name="">
    <property name="geometry">
     <rect>
-     <x>330</x>
-     <y>330</y>
-     <width>171</width>
+     <x>70</x>
+     <y>240</y>
+     <width>201</width>
      <height>41</height>
     </rect>
    </property>
-   <property name="font">
-    <font>
-     <family>Laksaman</family>
-     <pointsize>15</pointsize>
-    </font>
-   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_3">
+    <item>
+     <widget class="QLabel" name="Label_ISD">
+      <property name="text">
+       <string>Distance between
+stimuli (s)</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QDoubleSpinBox" name="SpinBox_ISD"/>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>

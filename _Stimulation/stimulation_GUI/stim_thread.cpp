@@ -37,22 +37,27 @@ void stim_Thread::run(){
         calibrated=true;
         stimulating = true; // set the stimulating flag to true so that it runs the stimulation part of the thread
         cout<<"Raising stimulation flag"<< endl;
+
     }
+    // DEFINE TIME STRUCTS
+    struct timespec t_start; // starting time of new step
+    struct timespec t_next; // time to wait before repeating thread loop
+    struct timespec t_period; // loop duration inside thread
 
         switch(protocol){
 
             case 1: // CODE TO RUN THE PROTOCOL 1
 
                 cout<<"I'm running protocol 1"<<endl;
-                struct timespec t_start; // starting time of new step
-                struct timespec t_next; // time to wait before repeating thread loop
-                struct timespec t_period; // loop duration insiede thread
+                cout<<"Current: " << current << endl;
 
                 t_period.tv_sec = 0;
                 t_period.tv_nsec = DEFAULT_LOOP_TIME_NS; //1ms
 
                 clock_gettime( CLOCK_MONOTONIC, &t_next);
                 clock_gettime( CLOCK_MONOTONIC, &t_start);
+
+                loop_count = 58000;
 
                 while(stimulating) {
                     t_next = addition(t_next, t_period);
@@ -95,12 +100,142 @@ void stim_Thread::run(){
 
             case 2: // CODE TO RUN THE PROTOCOL 2
                 cout<<"I'm running protocol 2"<<endl;
-                break;
+                cout << "Current: "<< current << endl;
+
+                loop_count = 0;
+
+                    t_period.tv_sec = 0;
+                    t_period.tv_nsec = DEFAULT_LOOP_TIME_NS; //1ms
+
+                    clock_gettime( CLOCK_MONOTONIC, &t_next);
+                    clock_gettime( CLOCK_MONOTONIC, &t_start);
+
+                    numStimuli = 0;
+
+                    while(stimulating){
+                        t_next = addition(t_next, t_period);
+
+                        if(loop_count%interpulse_interval == 0) // repeats every DistCloseStimuli (50ms)
+                        {
+                            if(rep<2)
+                            {
+                                stimulator1.channels[0].packet_number = smpt_packet_number_generator_next(&stimulator1.device);
+
+                                // BIFASICO
+                                stimulator1.channels[0].points[0].current =  current;
+                                stimulator1.channels[0].points[0].time = PW;
+                                stimulator1.channels[0].points[1].current =  -current;
+                                stimulator1.channels[0].points[1].time = PW;
+
+                                bool check_sent = smpt_send_ll_channel_config(&stimulator1.device, &stimulator1.channels[0]);
+                                printf("Stimolo inviato\n");
+
+                                rep++;
+                                flag = 1;
+                            }
+
+                            if (rep==2 && flag == 1) // 2 close stimuli were sent
+                            {
+                                numStimuli = numStimuli + 1;
+                                printf("N°cycle: %d\n",numStimuli);
+                            }
+
+                            flag = 0;
+                        }
+
+                        if(loop_count%interstimulus_distance==0) rep=0; // after 5s allows to send again pulses
+
+                        if(numStimuli >= totNStimuli)
+                            stimulating = false;
+
+                        loop_count++;
+                        clock_nanosleep ( CLOCK_MONOTONIC, TIMER_ABSTIME, &t_next, nullptr );
+                    }
+                    break;
             case 3: // CODE TO RUN PROTOCOL 3
                 cout<<"I'm running protocol 3"<<endl;
+                cout << "Current: "<< current << endl;
+                cout << "Frequency: "<< (1000/stimT)<< " and stimT : " << stimT << endl;
+                cout << "Ramp interval: " << (ramp_Interval/1000)<<" s"<<endl;
+
+                loop_count = 0;
+
+                t_period.tv_sec = 0;
+                t_period.tv_nsec = DEFAULT_LOOP_TIME_NS; //1ms (define)
+
+                clock_gettime( CLOCK_MONOTONIC, &t_next);
+                clock_gettime( CLOCK_MONOTONIC, &t_start);
+
+                while(stimulating)
+                {
+                    t_next = addition(t_next, t_period);
+
+                    if(loop_count%stimT == 0) // repeats every stimT (every 20ms = 50Hz)
+                    {
+                        stimulator1.channels[0].packet_number = smpt_packet_number_generator_next(&stimulator1.device);
+
+                        stimulator1.channels[0].points[0].current =  current;
+                        stimulator1.channels[0].points[0].time = PW;
+                        stimulator1.channels[0].points[1].current =  -current;
+                        stimulator1.channels[0].points[1].time = PW;
+
+                        bool check_sent = smpt_send_ll_channel_config(&stimulator1.device, &stimulator1.channels[0]);
+                    }
+
+
+                    if(loop_count%ramp_Interval == 0) // after 3s either increment current or stop (if max current was reached)
+                    {
+                        if (current+current_increment >= current_maxContinuous) stimulating = false;
+                        else
+                        {
+                            current = current+current_increment;
+                            printf("Current: %d\n", current);
+                            loop_count=0;
+                        }
+                    }
+
+                    loop_count++;
+                    clock_nanosleep ( CLOCK_MONOTONIC, TIMER_ABSTIME, &t_next, nullptr );
+                }
+
+
                 break;
             case 4: // CODE TO RUN PROTOCOL 4
                 cout<<"I'm running protocol 4"<<endl;
+                cout << "Current: "<< current << endl;
+
+                loop_count = 1;
+
+                t_period.tv_sec = 0;
+                t_period.tv_nsec = DEFAULT_LOOP_TIME_NS; //1ms (define)
+
+                clock_gettime( CLOCK_MONOTONIC, &t_next);
+                clock_gettime( CLOCK_MONOTONIC, &t_start);
+
+                while(stimulating)
+                {
+                    t_next = addition(t_next, t_period);
+
+                    if(loop_count%stimT == 0) // repeats every stimT (every 20ms = 50Hz)
+                    {
+                        stimulator1.channels[0].packet_number = smpt_packet_number_generator_next(&stimulator1.device);
+
+                        stimulator1.channels[0].points[0].current =  current;
+                        stimulator1.channels[0].points[0].time = PW;
+                        stimulator1.channels[0].points[1].current =  -current;
+                        stimulator1.channels[0].points[1].time = PW;
+
+                        bool check_sent = smpt_send_ll_channel_config(&stimulator1.device, &stimulator1.channels[0]);
+                    }
+
+                    if(loop_count%600000 == 0) // after 600s = 10min -> stop stimulation
+                    {
+                        stimulating = false;
+                    }
+
+                    loop_count++;
+                    clock_nanosleep ( CLOCK_MONOTONIC, TIMER_ABSTIME, &t_next, nullptr );
+                }
                 break;
        }
 }
@@ -109,7 +244,7 @@ void stim_Thread::stopStimulation(){
     stimulating=false;
 
     // CLEAN UP VARIABLES
-    current = 3; // reset current
+    //current = 3; // reset current -> NO! needed to switch between protocols
     current_increment = 2;
     numStimuli=0;
 }

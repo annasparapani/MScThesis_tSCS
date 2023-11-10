@@ -16,9 +16,9 @@
   <widget class="QTextBrowser" name="Text_Description">
    <property name="geometry">
     <rect>
-     <x>130</x>
+     <x>80</x>
      <y>70</y>
-     <width>351</width>
+     <width>441</width>
      <height>81</height>
     </rect>
    </property>
@@ -27,7 +27,7 @@
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The stimulation will begin after the &amp;quot;START&amp;quot; is clicked. It will deliver a series of pulses, &lt;span style=&quot; font-weight:600;&quot;&gt;increasing the current amplitude every 3s&lt;/span&gt;. It will stop when you press the &amp;quot;STOP&amp;quot; button.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The stimulation will begin after the &amp;quot;START&amp;quot; is clicked. It will deliver a continuous stimulation with the set frequency (default 50Hz) , &lt;span style=&quot; font-weight:600;&quot;&gt;increasing the current amplitude every 3s&lt;/span&gt;. It will stop when you press the &amp;quot;STOP&amp;quot; button.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </widget>
   <widget class="QTextBrowser" name="Text_Title">
@@ -45,16 +45,6 @@ p, li { white-space: pre-wrap; }
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:16pt; color:#3465a4;&quot;&gt;protocol 3:&lt;/span&gt;&lt;span style=&quot; font-size:16pt; font-weight:600; color:#3465a4;&quot;&gt; ramp&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-   </property>
-  </widget>
-  <widget class="QDoubleSpinBox" name="SpinBox_CurrentAmplitude">
-   <property name="geometry">
-    <rect>
-     <x>190</x>
-     <y>170</y>
-     <width>101</width>
-     <height>41</height>
-    </rect>
    </property>
   </widget>
   <widget class="QPushButton" name="Button_Home">
@@ -75,19 +65,12 @@ p, li { white-space: pre-wrap; }
    <property name="geometry">
     <rect>
      <x>70</x>
-     <y>250</y>
-     <width>111</width>
-     <height>101</height>
+     <y>290</y>
+     <width>221</width>
+     <height>51</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout_2">
-    <item>
-     <widget class="QPushButton" name="Button_Start_2">
-      <property name="text">
-       <string>START</string>
-      </property>
-     </widget>
-    </item>
+   <layout class="QHBoxLayout" name="horizontalLayout_3">
     <item>
      <widget class="QPushButton" name="Button_Stop_2">
       <property name="text">
@@ -95,21 +78,14 @@ p, li { white-space: pre-wrap; }
       </property>
      </widget>
     </item>
+    <item>
+     <widget class="QPushButton" name="Button_Start_2">
+      <property name="text">
+       <string>START</string>
+      </property>
+     </widget>
+    </item>
    </layout>
-  </widget>
-  <widget class="QLabel" name="Label_CurrentAmplitude">
-   <property name="geometry">
-    <rect>
-     <x>60</x>
-     <y>170</y>
-     <width>121</width>
-     <height>41</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Starting Current 
-Amplitude (mA)</string>
-   </property>
   </widget>
   <widget class="QTextBrowser" name="Text_Note">
    <property name="geometry">
@@ -128,64 +104,98 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:10pt; color:#204a87;&quot;&gt;As a safety measure the maximum current is set to 150mA.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </widget>
-  <widget class="QDoubleSpinBox" name="SpinBox_CurrentIncrement">
+  <widget class="QWidget" name="">
    <property name="geometry">
     <rect>
-     <x>440</x>
-     <y>170</y>
-     <width>101</width>
-     <height>41</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLabel" name="Label_CurrentIncrement">
-   <property name="geometry">
-    <rect>
-     <x>310</x>
-     <y>170</y>
-     <width>121</width>
-     <height>41</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Increment (mA)</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_currentImposed">
-   <property name="geometry">
-    <rect>
-     <x>250</x>
-     <y>260</y>
-     <width>161</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Current Imposed (mA)</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_timeIncrement">
-   <property name="geometry">
-    <rect>
-     <x>250</x>
+     <x>320</x>
      <y>290</y>
-     <width>161</width>
-     <height>17</height>
+     <width>223</width>
+     <height>36</height>
     </rect>
    </property>
-   <property name="text">
-    <string>Next Increment in</string>
-   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <item>
+     <widget class="QLabel" name="label_currentImposed">
+      <property name="text">
+       <string>Current
+Imposed (mA)</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLCDNumber" name="lcd_currentImposed"/>
+    </item>
+   </layout>
   </widget>
-  <widget class="QLCDNumber" name="lcd_currentImposed">
+  <widget class="QWidget" name="">
    <property name="geometry">
     <rect>
-     <x>430</x>
-     <y>260</y>
-     <width>64</width>
-     <height>23</height>
+     <x>70</x>
+     <y>170</y>
+     <width>461</width>
+     <height>81</height>
     </rect>
    </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QLabel" name="Label_CurrentAmplitude">
+        <property name="text">
+         <string>Starting Current 
+Amplitude (mA)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="Label_Frequency">
+        <property name="text">
+         <string>Frequency (Hz)</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QDoubleSpinBox" name="SpinBox_CurrentAmplitude"/>
+      </item>
+      <item>
+       <widget class="QDoubleSpinBox" name="SpinBox_Frequency"/>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="QLabel" name="Label_CurrentIncrement">
+        <property name="text">
+         <string>Increment
+(mA)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="Label_Interval">
+        <property name="text">
+         <string>Interval (s)</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <item>
+       <widget class="QDoubleSpinBox" name="SpinBox_CurrentIncrement"/>
+      </item>
+      <item>
+       <widget class="QDoubleSpinBox" name="SpinBox_Interval"/>
+      </item>
+     </layout>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>

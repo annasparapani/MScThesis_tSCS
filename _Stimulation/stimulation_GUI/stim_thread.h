@@ -26,7 +26,15 @@ public:
     int PW=1000; //1ms PW for protocol 1
     int maxCurrent=150; //max current for safety
     int numStimuli = 0;
-    unsigned long int loop_count = 58000;
+    unsigned long int loop_count = 0;
+
+    //PROTOCOL 2 parameters
+    int flag = 0;
+    int rep=0;
+
+    // PROTOCOL 3 parameters
+    int stimT = 20; //[ms]
+    int ramp_Interval = 3000; // [ms]
 
     void run();
     void stimulation();

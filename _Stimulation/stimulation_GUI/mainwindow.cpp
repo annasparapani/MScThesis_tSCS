@@ -23,6 +23,7 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::closeApplication(){
+    myThread->calibrated=false; // additional control to lower calibration flag
     QCoreApplication::exit(0);
 }
 
