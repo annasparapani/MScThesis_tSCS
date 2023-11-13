@@ -15,7 +15,7 @@ tempo_tra_campionamenti = mean(diff(EMGdata.time));
 Fs_EMG = 1 / tempo_tra_campionamenti;
 %% Signal processing
 
-% Band-pass filter (preso da 'EMGcode')
+%Band-pass filter (preso da 'EMGcode')
 %fcutlow=10; %Hz
 %fcuthigh=250;  %Hz
 %fcuthigh non va bene perchè deve essere al massimo la metà della frequenza

@@ -85,6 +85,8 @@ fcuthigh=350;
 [z,p,k]=butter(4,[fcutlow,fcuthigh]/(Fs_EMG/2),'bandpass');
 [sos,g]=zp2sos(z,p,k);
 x_filt(:,:) = filtfilt(sos,g,x(:,:));
+[b, a] = sos2tf(sos, g); % Extract coefficients
+xfilter = filter(b, a, x_filt(:,:)); %apply filter
 
 
 % figure()
@@ -105,7 +107,7 @@ x_filt(:,:) = filtfilt(sos,g,x(:,:));
 
 
 %%
-xfilter=filter(d,x_filt(:,:));
+%xfilter=filter(d,x_filt(:,:));
 [pff,ff]=pwelch(xfilter(:,1),[],[],[],Fs_EMG);
 % figure()
 % plot(fx,pxx,'r',ff,pff,'b');
@@ -212,7 +214,7 @@ subplot(4,1,4), plot(ta_sx), hold on, plot (locs8,pk8,'o'), ylabel('mV'), title(
  plot(ta_dx), hold on, plot(locs4,pk4,'o'), ylabel('mV'), xlabel('samples');
 
 
-
+close all
 %% identifico finestre temporali
 startIdx1 = locs1 +6 ; %7 samples di artefatto
 startIdx2 = locs2 +6; %+ 3;
@@ -270,7 +272,8 @@ time_Hams=(0:1/Fs_EMG:length(Mwaves2)/Fs_EMG-1/Fs_EMG)*1000;
 
 
 %% M_WAVES GRAPHS
-figure()
+close all
+figure() % M wave Quad DX
 for i=1:10
     subplot(2,5,i)
     plot(time_Quad,Mwaves1(i,:))
@@ -280,7 +283,7 @@ for i=1:10
     xlabel('ms')
 end
 
-figure()
+figure() % M wave Hams DX
 for i=1:10
     subplot(2,5,i)
     plot(time_Hams,Mwaves2(i,:))
@@ -290,7 +293,7 @@ for i=1:10
     xlabel('ms')
 end
 
-figure()
+figure() % M wave GAST D
 for i=1:10
     subplot(2,5,i)
     plot(time_Quad,Mwaves3(i,:))
@@ -300,8 +303,7 @@ for i=1:10
     xlabel('ms')
 end
 
-figure()
-
+figure() % M wave TA DX
 for i=1:10
     subplot(2,5,i)
     plot(time_Hams,Mwaves4(i,:))
@@ -311,86 +313,80 @@ for i=1:10
     xlabel('ms')
 end
 
-% figure()
-% for i=1:10
-%     subplot(2,5,i)
-%     plot(time_Quad,Mwaves5(i,:))
-%     grid on
-%     title('M wave Quad SX')
-%     ylabel ('mV')
-%     xlabel('ms')
-% end
-% 
-% figure()
-% for i=1:10
-%     subplot(2,5,i)
-%     plot(time_Hams,Mwaves6(i,:))
-%     grid on
-%     title('M wave Hams SX')
-%     ylabel ('mV')
-%     xlabel('ms')
-% end
-% % 
-% % figure()
-% % for i=1:10
-% %     subplot(2,5,i)
-% %     plot(time_Quad,Mwaves7(i,:))
-% %     grid on
-% %     title('M wave GAST SX')
-% %     ylabel ('mV')
-% %     xlabel('ms')
-% % end
-% % 
-% % figure()
-% % 
-% % for i=1:10
-% %     subplot(2,5,i)
-% %     plot(time_Hams,Mwaves8(i,:))
-% %     title('M wave TA SX')
-% %     grid on    
-% %     ylabel ('mV')
-% %     xlabel('ms')
-% % end
+figure() % M wave Quad SX
+for i=1:10
+    subplot(2,5,i)
+    plot(time_Quad,Mwaves5(i,:))
+    grid on
+    title('M wave Quad SX')
+    ylabel ('mV')
+    xlabel('ms')
+end
 
+figure() % M wave Hams SX
+for i=1:10
+    subplot(2,5,i)
+    plot(time_Hams,Mwaves6(i,:))
+    grid on
+    title('M wave Hams SX')
+    ylabel ('mV')
+    xlabel('ms')
+end
+
+figure() % M wave GAST SX
+for i=1:10
+    subplot(2,5,i)
+    plot(time_Quad,Mwaves7(i,:))
+    grid on
+    title('M wave GAST SX')
+    ylabel ('mV')
+    xlabel('ms')
+end
+
+figure() % M wave TA SX
+for i=1:10
+    subplot(2,5,i)
+    plot(time_Hams,Mwaves8(i,:))
+    title('M wave TA SX')
+    grid on    
+    ylabel ('mV')
+    xlabel('ms')
+end
  
-%% rilevo picchi delle singole onde M
-%massimi
+%% M waves peaks detection
 s=struct('W1',Mwaves1,'W2',Mwaves2,'W3',Mwaves3,'W4',Mwaves4); %'W5',Mwaves5,'W6',Mwaves6,'W7',Mwaves7,'W8',Mwaves8);
-
+% maxima
 M1=max(s.W1,[],2);
 M2=max(s.W2,[],2);
 M3=max(s.W3,[],2);
 M4=max(s.W4,[],2);
-% M5=max(s.W5,[],2);
-% M6=max(s.W6,[],2);
-% M7=max(s.W7,[],2);
-% M8=max(s.W8,[],2);
+M5=max(s.W5,[],2);
+M6=max(s.W6,[],2);
+M7=max(s.W7,[],2);
+M8=max(s.W8,[],2);
 
-%minimi
+% minima
 m1=min(s.W1,[],2);
 m2=min(s.W2,[],2);
 m3=min(s.W3,[],2);
 m4=min(s.W4,[],2);
-% m5=min(s.W5,[],2);
-% m6=min(s.W6,[],2);
-% m7=min(s.W7,[],2);
-% m8=min(s.W8,[],2);
+m5=min(s.W5,[],2);
+m6=min(s.W6,[],2);
+m7=min(s.W7,[],2);
+m8=min(s.W8,[],2);
 
 %ampiezza
 tot1=M1-m1;
 tot2=M2-m2;
 tot3=M3-m3;
 tot4=M4-m4;
-% tot5=M5-m5;
-% tot6=M6-m6;
-% tot7=M7-m7;
-% tot8=M8-m8;
+tot5=M5-m5;
+tot6=M6-m6;
+tot7=M7-m7;
+tot8=M8-m8;
 
 %indici
-n1=0;
-n2=0;
-n3=0;
-n4=0;
+n1=0; n2=0; n3=0; n4=0;
 
 for i=1:10
     if(tot1(i)>=0.05) 
@@ -405,46 +401,47 @@ for i=1:10
     if(tot4(i)>=0.05) 
         n4=n4+1;
     end
-%     if(tot5(i)>=0.05) 
-%         n5=n5+1;
-%     end
-%     if(tot6(i)>=0.05) 
-%         n6=n6+1;
-%     end
-%     if(tot7(i)>=0.05) 
-%         n7=n7+1;
-%     end
-%     if(tot8(i)>=0.05) 
-%         n8=n8+1;
-%     end
+    if(tot5(i)>=0.05) 
+        n5=n5+1;
+    end
+    if(tot6(i)>=0.05) 
+        n6=n6+1;
+    end
+    if(tot7(i)>=0.05) 
+        n7=n7+1;
+    end
+    if(tot8(i)>=0.05) 
+        n8=n8+1;
+    end
 end
+
 n1=(n1/length(m1))*100;  
 n2=(n2/length(m1))*100; 
 n3=(n3/length(m1))*100; 
 n4=(n4/length(m1))*100; 
-% n5=(n5/length(m1))*100;  
-% n6=(n6/length(m1))*100; 
-% n7=(n7/length(m1))*100; 
-% n8=(n8/length(m1))*100; 
+n5=(n5/length(m1))*100;  
+n6=(n6/length(m1))*100; 
+n7=(n7/length(m1))*100; 
+n8=(n8/length(m1))*100; 
 
 formatSpec1="N° of Mwave above 50uV is %4.2f/100 for Quad Dx\n";
 formatSpec2="N° of Mwave above 50uV is %4.2f/100 for Hams Dx\n";
 formatSpec3="N° of Mwave above 50uV is %4.2f/100 for Gast Dx\n";
 formatSpec4="N° of Mwave above 50uV is %4.2f/100 for TA Dx\n\n";
-% formatSpec5="N° of Mwave above 50uV is %4.2f/100 for Quad Sx\n";
-% formatSpec6="N° of Mwave above 50uV is %4.2f/100 for Hams Sx\n";
-% formatSpec7="N° of Mwave above 50uV is %4.2f/100 for Gast Sx\n";
-% formatSpec8="N° of Mwave above 50uV is %4.2f/100 for TA Sx\n";
+formatSpec5="N° of Mwave above 50uV is %4.2f/100 for Quad Sx\n";
+formatSpec6="N° of Mwave above 50uV is %4.2f/100 for Hams Sx\n";
+formatSpec7="N° of Mwave above 50uV is %4.2f/100 for Gast Sx\n";
+formatSpec8="N° of Mwave above 50uV is %4.2f/100 for TA Sx\n";
+
 fprintf(formatSpec1,n1);
 fprintf(formatSpec2,n2);
 fprintf(formatSpec3,n3);
 fprintf(formatSpec4,n4);
-% fprintf(formatSpec5,n5);
-% fprintf(formatSpec6,n6);
-% fprintf(formatSpec7,n7);
-% fprintf(formatSpec8,n8);
+fprintf(formatSpec5,n5);
+fprintf(formatSpec6,n6);
+fprintf(formatSpec7,n7);
+fprintf(formatSpec8,n8);
 
-%%
 s1= struct('W5',Mwaves5,'W6',Mwaves6,'W7',Mwaves7,'W8',Mwaves8);
 
 M5=max(s1.W5,[],2);
