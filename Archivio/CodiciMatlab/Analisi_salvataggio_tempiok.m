@@ -1,3 +1,4 @@
+
 clc
 clear all
 close all
@@ -45,11 +46,8 @@ for j = 1:16
     
 end
 
-
 EMGok=[EMG(:,5),EMG(:,6),EMG(:,7),EMG(:,8),EMG(:,9),EMG(:,10),EMG(:,11),EMG(:,12)];
 x=EMGok;
-
-
 
 %% Acquistion frequency EMG
 Fs_EMG=1024;
