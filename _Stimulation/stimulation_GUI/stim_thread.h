@@ -9,8 +9,9 @@ class stim_Thread:public QThread
 signals:
     void NumberChanged(int);
     void stopThread();
-    void currentValueChanged(); //generated every time the imposed current value changes
-                                // and used to update the value displayed on the lcd display
+    void currentValueChanged();
+    void numStimuliChanged();
+    void pauseStarted();
 
 public:
     explicit stim_Thread(QObject *parent=0);
@@ -27,6 +28,7 @@ public:
     int maxCurrent=150; //max current for safety
     int numStimuli = 0;
     unsigned long int loop_count = 0;
+
 
     //PROTOCOL 2 parameters
     int flag = 0;

@@ -81,7 +81,7 @@ p, li { white-space: pre-wrap; }
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>60</x>
+     <x>30</x>
      <y>300</y>
      <width>251</width>
      <height>71</height>
@@ -103,29 +103,6 @@ p, li { white-space: pre-wrap; }
      </widget>
     </item>
    </layout>
-  </widget>
-  <widget class="QLabel" name="Label_currentImposed">
-   <property name="geometry">
-    <rect>
-     <x>340</x>
-     <y>300</y>
-     <width>161</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Current imposed (mA)</string>
-   </property>
-  </widget>
-  <widget class="QLCDNumber" name="LCD_Current">
-   <property name="geometry">
-    <rect>
-     <x>370</x>
-     <y>330</y>
-     <width>64</width>
-     <height>23</height>
-    </rect>
-   </property>
   </widget>
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
@@ -160,7 +137,7 @@ Amplitude (mA)</string>
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>70</x>
@@ -180,6 +157,61 @@ stimuli (s)</string>
     </item>
     <item>
      <widget class="QDoubleSpinBox" name="SpinBox_ISD"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>300</x>
+     <y>260</y>
+     <width>211</width>
+     <height>111</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_4">
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QLabel" name="Label_currentImposed">
+        <property name="text">
+         <string>Current
+imposed (mA)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="Label_currentImposed_2">
+        <property name="text">
+         <string>Pulse N°</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="Label_currentImposed_3">
+        <property name="text">
+         <string>Pause</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QLCDNumber" name="LCD_Current"/>
+      </item>
+      <item>
+       <widget class="QLCDNumber" name="LCD_PulseNo"/>
+      </item>
+      <item>
+       <widget class="QProgressBar" name="progressBar_Pause">
+        <property name="value">
+         <number>24</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>

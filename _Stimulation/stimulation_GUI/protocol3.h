@@ -14,9 +14,11 @@ class Protocol3 : public QDialog
 public:
     explicit Protocol3(QWidget *parent = nullptr);
     ~Protocol3();
+     void updateLCD();
 
 private:
     Ui::Protocol3 *ui;
+    QTimer* timer;
 
 private slots:
     void backHome();

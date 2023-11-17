@@ -33,13 +33,13 @@ p, li { white-space: pre-wrap; }
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>100</x>
-     <y>310</y>
-     <width>111</width>
-     <height>101</height>
+     <x>40</x>
+     <y>320</y>
+     <width>201</width>
+     <height>61</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QHBoxLayout" name="horizontalLayout_3">
     <item>
      <widget class="QPushButton" name="Button_Start">
       <property name="text">
@@ -121,7 +121,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:10pt; color:#204a87;&quot;&gt;The current is set to &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600; color:#204a87;&quot;&gt;80% of the maximum tolerance current amplitude found in protocol 1&lt;/span&gt;&lt;span style=&quot; font-size:10pt; color:#204a87;&quot;&gt;. Still, you can change the current manually if you are performing other trials.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>60</x>
@@ -174,13 +174,13 @@ distance (s)</string>
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>240</x>
-     <y>310</y>
+     <x>250</x>
+     <y>300</y>
      <width>291</width>
-     <height>101</height>
+     <height>111</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_2">

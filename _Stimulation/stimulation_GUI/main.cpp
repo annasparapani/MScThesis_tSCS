@@ -14,8 +14,8 @@ interface for performing 4 protocols of transcutaneous spinal cord
 sitmulation with RehaMove stimulators.
 The stimulation uses a single channel [0] and surface electrodes.
 
-STIMULATOR USED:
-ELECTRODES USED:
+STIMULATOR USED: RehaMove PRO, Hasomed (Germany)
+ELECTRODES USED: PALS 5x5cm square, Axelgaard Manufacturing (USA)
 
 The code only deliver the stimulation, data analysis is perfomed on EMG
 data on MATLAB.

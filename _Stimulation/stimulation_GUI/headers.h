@@ -50,6 +50,7 @@
 #include <qconfig.h>
 #include <ctime>
 #include <limits.h>
+#include <QTimer>
 
 
 #endif // HEADERS_H

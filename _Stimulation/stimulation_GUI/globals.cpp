@@ -20,6 +20,4 @@ int current_maxContinuous = 150;
 stimulator stimulator1;
 int number_of_points=2;
 
-//pthread_t myThread; // thread class instance
-
 stim_Thread *myThread;

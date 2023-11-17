@@ -9,6 +9,7 @@ Protocol3::Protocol3(QWidget *parent) :
 {
     ui->setupUi(this);
     myThread = new stim_Thread(this);
+
     ui->SpinBox_CurrentAmplitude->setValue(current_minRamp); // set spin boxes to default values
     ui->SpinBox_CurrentIncrement->setValue(increment_minRamp);
     ui->SpinBox_Frequency->setValue(1000/myThread->stimT);
@@ -19,7 +20,7 @@ Protocol3::Protocol3(QWidget *parent) :
     connect(ui->Button_Start_2, &QPushButton::clicked, this, &Protocol3::startClicked);
     connect(ui->Button_Stop_2, &QPushButton::clicked, this, &Protocol3::stopClicked);
     connect(ui->Button_Stop_2, &QPushButton::clicked, myThread, &stim_Thread::stopThread);
-
+    connect(myThread, &stim_Thread::currentValueChanged, this, &Protocol3::updateLCD);
 }
 
 Protocol3::~Protocol3()
@@ -74,3 +75,9 @@ void Protocol3::stopClicked(){
      // clear lcd displays
      ui->lcd_currentImposed->display(0);
 }
+
+void Protocol3::updateLCD(){
+        cout<<"Updating LCD current\n";
+        ui->lcd_currentImposed->display(current);
+}
+

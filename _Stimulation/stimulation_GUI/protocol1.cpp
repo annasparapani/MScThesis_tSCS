@@ -9,17 +9,26 @@ Protocol1::Protocol1(QWidget *parent) :
 {
     ui->setupUi(this);
     myThread = new stim_Thread(this);
+    progressBarTimer = new QTimer(this);
+
     // SET DEFAULT VALUES
     ui->SpinBox_CurrentAmplitude->setValue(current); // set the default current value to 10
+    ui->LCD_PulseNo->display(myThread->numStimuli);
     ui->SpinBox_Increment->setValue(current_increment);
     ui->Button_Stop->setEnabled(false);
     ui->SpinBox_ISD->setValue(interstimulus_distance/1000);
+    ui->progressBar_Pause->setRange(0,60);
+    ui->progressBar_Pause->setValue(0);
 
     // CONNECT BUTTONS
     connect(ui->Button_Home, &QPushButton::clicked, this, &Protocol1::backHome);
     connect(ui->Button_Start, &QPushButton::clicked, this, &Protocol1::startClicked);
     connect(ui->Button_Stop, &QPushButton::clicked, this, &Protocol1::stopClicked);
     connect(ui->Button_Stop, &QPushButton::clicked, myThread, &stim_Thread::stopThread);
+    connect(myThread, &stim_Thread::currentValueChanged, this, &Protocol1::updateLCD);
+    connect(myThread, &stim_Thread::numStimuliChanged, this, &Protocol1::update_numStimuli);
+    connect(myThread, &stim_Thread::pauseStarted, this, &Protocol1::startPause);
+    connect(progressBarTimer, &QTimer::timeout, this, &Protocol1::updatePauseProgressBar);
 }
 
 Protocol1::~Protocol1()
@@ -64,15 +73,37 @@ void Protocol1::stopClicked(){
     // enable and disable objects
     ui->SpinBox_CurrentAmplitude->setEnabled(true);
     ui->SpinBox_Increment->setEnabled(true);
-    ui->SpinBox_ISD->setEnabled(false);
+    ui->SpinBox_ISD->setEnabled(true);
     ui->Button_Start->setEnabled(true);
     ui->Button_Stop->setEnabled(false);
     ui->Button_Home->setEnabled(true);
-
     ui->LCD_Current->display(0);
-
+    ui->LCD_PulseNo->display(0);
 }
 
 void Protocol1::updateLCD(){
-    ui->LCD_Current->display(current);
+        cout<<"Updating LCD current\n";
+        ui->LCD_Current->display(current);
 }
+
+void Protocol1::update_numStimuli(){
+       cout<<"Updating num stimuli\n";
+       ui->LCD_PulseNo->display(myThread->numStimuli);
+}
+
+void Protocol1::startPause(){
+    progressBarTimer->start(1000);
+
+}
+void Protocol1::updatePauseProgressBar(){
+
+    int value = ui->progressBar_Pause->value();
+    ui->progressBar_Pause->setValue(value+1);
+
+    if(value==60){
+        progressBarTimer->stop();
+        ui->progressBar_Pause->setValue(0);
+    }
+
+}
+

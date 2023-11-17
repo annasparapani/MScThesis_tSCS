@@ -7,8 +7,6 @@ stim_Thread::stim_Thread(QObject *parent):
     QThread(parent)
 {
     connect(this, &stim_Thread::stopThread, this, &stim_Thread::stopStimulation);
-    //connect(this, &stim_Thread::currentValueChanged,*myProtocol1, &Protocol1::updateLCD); TO FIX
-    //-> how to communicate with interfaces? problem because they are static?
 }
 
 void stim_Thread::run(){
@@ -25,15 +23,15 @@ void stim_Thread::run(){
         cout << "Check open = " << check_open << endl;
 
         stimulator1.init_stimulation(&stimulator1.device);
-
+        cout<<"check one"<<endl;
         // Struct for ll_channel_config command
         for(int i = 0; i < 4; i++) {
             stimulator1.channels[i] = {};
         }
-
+        cout<<"check two"<<endl;
         stimulator stimulatorClass;
         stimulatorClass.channelsInitialization(stimulator1, number_of_points);
-
+        cout<<"check three"<<endl;
         calibrated=true;
         stimulating = true; // set the stimulating flag to true so that it runs the stimulation part of the thread
         cout<<"Raising stimulation flag"<< endl;
@@ -76,6 +74,7 @@ void stim_Thread::run(){
                             bool check_sent = smpt_send_ll_channel_config(&stimulator1.device, &stimulator1.channels[0]);
 
                             numStimuli = numStimuli + 1;
+                            emit numStimuliChanged();
                             printf("N°cycle: %d\n",numStimuli);
                         }
                     }
@@ -89,6 +88,7 @@ void stim_Thread::run(){
                             printf("Current: %d\n", current);
                             loop_count=0;
                             numStimuli=0;
+                            emit pauseStarted();
                         }
                     }
 
@@ -152,6 +152,7 @@ void stim_Thread::run(){
                         clock_nanosleep ( CLOCK_MONOTONIC, TIMER_ABSTIME, &t_next, nullptr );
                     }
                     break;
+
             case 3: // CODE TO RUN PROTOCOL 3
                 cout<<"I'm running protocol 3"<<endl;
                 cout << "Current: "<< current << endl;
@@ -189,7 +190,8 @@ void stim_Thread::run(){
                         else
                         {
                             current = current+current_increment;
-                            printf("Current: %d\n", current);
+                            emit currentValueChanged();
+                            printf("Current: %d and signal emitted \n", current);
                             loop_count=0;
                         }
                     }

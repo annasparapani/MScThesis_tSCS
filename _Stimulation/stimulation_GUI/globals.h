@@ -24,5 +24,4 @@ extern int number_of_points; // number of points to impose current (square wave 
 //THREAD
 extern stim_Thread *myThread;
 
-
 #endif // GLOBALS_H

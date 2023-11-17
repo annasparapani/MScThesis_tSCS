@@ -15,14 +15,18 @@ public:
     explicit Protocol1(QWidget *parent = nullptr);
     ~Protocol1();
     void updateLCD();
+    void update_numStimuli();
 
 private:
     Ui::Protocol1 *ui;
+    QTimer* progressBarTimer;
 
 private slots:
     void backHome();
     void startClicked();
     void stopClicked();
+    void startPause();
+    void updatePauseProgressBar();
 
 };
 
