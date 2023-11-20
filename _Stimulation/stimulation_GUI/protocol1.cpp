@@ -100,7 +100,7 @@ void Protocol1::updatePauseProgressBar(){
     int value = ui->progressBar_Pause->value();
     ui->progressBar_Pause->setValue(value+1);
 
-    if(value==60){
+    if(value==60||!(myThread->stimulating)){
         progressBarTimer->stop();
         ui->progressBar_Pause->setValue(0);
     }

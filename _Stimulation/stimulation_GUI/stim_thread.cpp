@@ -137,13 +137,17 @@ void stim_Thread::run(){
                             if (rep==2 && flag == 1) // 2 close stimuli were sent
                             {
                                 numStimuli = numStimuli + 1;
-                                printf("N°cycle: %d\n",numStimuli);
+                                printf("N°cycle: %d\n", numStimuli);
+                                emit numStimuliChanged();
+                                emit pauseStarted();
                             }
 
                             flag = 0;
                         }
 
-                        if(loop_count%interstimulus_distance==0) rep=0; // after 5s allows to send again pulses
+                        if(loop_count%interstimulus_distance==0) {
+                            rep=0; // after 5s allows to send again pulses
+                        }
 
                         if(numStimuli >= totNStimuli)
                             stimulating = false;

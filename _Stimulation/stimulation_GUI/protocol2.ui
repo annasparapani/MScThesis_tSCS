@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>585</width>
-    <height>524</height>
+    <width>525</width>
+    <height>501</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -33,8 +33,8 @@ p, li { white-space: pre-wrap; }
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>320</y>
+     <x>60</x>
+     <y>300</y>
      <width>201</width>
      <height>61</height>
     </rect>
@@ -59,7 +59,7 @@ p, li { white-space: pre-wrap; }
   <widget class="QTextBrowser" name="Text_Description">
    <property name="geometry">
     <rect>
-     <x>100</x>
+     <x>80</x>
      <y>70</y>
      <width>351</width>
      <height>81</height>
@@ -76,7 +76,7 @@ p, li { white-space: pre-wrap; }
   <widget class="QTextBrowser" name="Text_Title">
    <property name="geometry">
     <rect>
-     <x>130</x>
+     <x>110</x>
      <y>20</y>
      <width>291</width>
      <height>41</height>
@@ -93,7 +93,7 @@ p, li { white-space: pre-wrap; }
   <widget class="QPushButton" name="Button_Home">
    <property name="geometry">
     <rect>
-     <x>430</x>
+     <x>410</x>
      <y>440</y>
      <width>81</width>
      <height>51</height>
@@ -109,8 +109,8 @@ p, li { white-space: pre-wrap; }
     <rect>
      <x>270</x>
      <y>170</y>
-     <width>251</width>
-     <height>91</height>
+     <width>221</width>
+     <height>111</height>
     </rect>
    </property>
    <property name="html">
@@ -177,10 +177,10 @@ distance (s)</string>
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>250</x>
+     <x>300</x>
      <y>300</y>
-     <width>291</width>
-     <height>111</height>
+     <width>181</width>
+     <height>101</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -189,21 +189,24 @@ distance (s)</string>
       <item>
        <widget class="QLabel" name="Label_currentImposed">
         <property name="text">
-         <string>Current Imposed (mA)</string>
+         <string>Current
+Imposed (mA)</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QLabel" name="Label_IPIImposed">
         <property name="text">
-         <string>Interpulse Interval (ms)</string>
+         <string>Interpulse
+Interval (ms)</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QLabel" name="Label_ISDImposed">
         <property name="text">
-         <string>Interstimuli distance (s)</string>
+         <string>Interstimuli
+Distance (s)</string>
         </property>
        </widget>
       </item>
@@ -221,6 +224,54 @@ distance (s)</string>
        <widget class="QLCDNumber" name="lcdNumber_ISDImposed"/>
       </item>
      </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>60</x>
+     <y>370</y>
+     <width>121</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_4">
+    <item>
+     <widget class="QLabel" name="Label_pulseNo">
+      <property name="text">
+       <string>Pulse N°</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLCDNumber" name="LCD_PulseNo"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>190</x>
+     <y>370</y>
+     <width>97</width>
+     <height>50</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QLabel" name="Label_pause">
+      <property name="text">
+       <string>Pause</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QProgressBar" name="progressBar_Pause">
+      <property name="value">
+       <number>24</number>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>

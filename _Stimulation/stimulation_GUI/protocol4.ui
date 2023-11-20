@@ -121,7 +121,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:10pt; color:#204a87;&quot;&gt;The current is automatically set to the &lt;/span&gt;&lt;span style=&quot; font-size:10pt; font-weight:600; color:#204a87;&quot;&gt;max current reached in protocol 3: ramp.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>40</x>
@@ -162,21 +162,21 @@ Amplitude (mA)</string>
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>280</x>
-     <y>290</y>
+     <y>280</y>
      <width>191</width>
-     <height>31</height>
+     <height>36</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_3">
     <item>
      <widget class="QLabel" name="Label_currentImposed">
       <property name="text">
-       <string>Imposed
-current (mA)</string>
+       <string>Current
+Imposed (mA)</string>
       </property>
      </widget>
     </item>

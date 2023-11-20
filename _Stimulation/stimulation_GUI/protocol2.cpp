@@ -14,17 +14,23 @@ Protocol2::Protocol2(QWidget *parent) :
 {
     ui->setupUi(this);
     myThread = new stim_Thread(this);
+    progressBarTimer = new QTimer(this);
     interstimulus_distance=5; // since in protocol 2 interstimulus distance is expressed
                               // in seconds, redefine it to 5 s
     ui->SpinBox_CurrentAmplitude->setValue(0.8*current);
     ui->SpinBox_IPI->setValue(interpulse_interval);
     ui->SpinBox_ISD->setValue(interstimulus_distance);
     ui->Button_Stop->setEnabled(false);
+    ui->progressBar_Pause->setRange(0,50);
+    ui->progressBar_Pause->setValue(0);
 
     connect(ui->Button_Home, &QPushButton::clicked, this, &Protocol2::backHome);
     connect(ui->Button_Start, &QPushButton::clicked, this, &Protocol2::startClicked);
     connect(ui->Button_Stop, &QPushButton::clicked, this, &Protocol2::stopClicked);
     connect(ui->Button_Stop, &QPushButton::clicked, myThread, &stim_Thread::stopThread);
+    connect(myThread, &stim_Thread::numStimuliChanged, this, &Protocol2::update_numStimuli);
+    connect(myThread, &stim_Thread::pauseStarted, this, &Protocol2::startPause);
+    connect(progressBarTimer, &QTimer::timeout, this, &Protocol2::updatePauseProgressBar);
 
 }
 
@@ -78,5 +84,26 @@ void Protocol2::stopClicked(){
     ui->lcd_currentImposed->display(0);
     ui->lcdNumber_IPIImposed->display(0);
     ui->lcdNumber_ISDImposed->display(0);
+}
+
+void Protocol2::update_numStimuli(){
+       cout<<"Updating num stimuli\n";
+       ui->LCD_PulseNo->display(myThread->numStimuli);
+}
+
+void Protocol2::startPause(){
+    progressBarTimer->start(100);
 
 }
+void Protocol2::updatePauseProgressBar(){
+
+    int value = ui->progressBar_Pause->value();
+    ui->progressBar_Pause->setValue(value+1);
+
+    if(value==50||!(myThread->stimulating)){
+        progressBarTimer->stop();
+        ui->progressBar_Pause->setValue(0);
+    }
+}
+
+
