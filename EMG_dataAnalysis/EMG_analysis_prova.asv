@@ -189,12 +189,7 @@ startIdx_quad = locs1 +7; %7 samples di artefatto
 startIdx_hams = locs2 +7; %+ 3;
 startIdx_gast = locs3 +7;
 startIdx_ta = locs4 +7;
-
-startIsx_quad=locs5+7;
-startIsx_hams=locs6+7;
-startIsx_gast=locs7+7;
-startIsx_ta=locs8+7;
-
+startIsx_ta=locs5+1;
 duration_quad = 200; % ~100 ms
 duration_hams = 200; %Federico usava 52 (50ms) 15ms di latenza + 35ms di Mwave (1024Hz*50ms=57samples)
 
@@ -235,14 +230,14 @@ end
 
 % M-WAVES GRAPHS
 if plots_on
-    % plotMwave("M wave Quad DX", Mwaves1, Fs_EMG);
-    % plotMwave("M wave Hams DX", Mwaves2, Fs_EMG);
-    % plotMwave("M wave Gast DX", Mwaves3, Fs_EMG);
-    % plotMwave("M wave TA DX", Mwaves4, Fs_EMG);
-    plotMwave("M wave Quad SX", Mwaves5, Fs_EMG);
-    plotMwave("M wave Hams SX", Mwaves6, Fs_EMG);
-    plotMwave("M wave Gast SX", Mwaves7, Fs_EMG);
-    plotMwave("M wave TA SX", Mwaves8, Fs_EMG);
+    plotMwave("M wave Quad DX", Mwaves1, Fs_EMG);
+    plotMwave("M wave Hams DX", Mwaves2, Fs_EMG);
+    plotMwave("M wave Gast DX", Mwaves3, Fs_EMG);
+    plotMwave("M wave TA DX", Mwaves4, Fs_EMG);
+    % plotMwave("M wave Quad SX", Mwaves5, Fs_EMG);
+    % plotMwave("M wave Hams SX", Mwaves6, Fs_EMG);
+    % plotMwave("M wave Gast SX", Mwaves7, Fs_EMG);
+    % plotMwave("M wave TA SX", Mwaves8, Fs_EMG);
 end
 
 %% M waves peaks detection

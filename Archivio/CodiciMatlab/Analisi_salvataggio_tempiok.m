@@ -358,30 +358,30 @@ M1=max(s.W1,[],2);
 M2=max(s.W2,[],2);
 M3=max(s.W3,[],2);
 M4=max(s.W4,[],2);
-M5=max(s.W5,[],2);
-M6=max(s.W6,[],2);
-M7=max(s.W7,[],2);
-M8=max(s.W8,[],2);
+% M5=max(s.W5,[],2);
+% M6=max(s.W6,[],2);
+% M7=max(s.W7,[],2);
+% M8=max(s.W8,[],2);
 
 % minima
 m1=min(s.W1,[],2);
 m2=min(s.W2,[],2);
 m3=min(s.W3,[],2);
 m4=min(s.W4,[],2);
-m5=min(s.W5,[],2);
-m6=min(s.W6,[],2);
-m7=min(s.W7,[],2);
-m8=min(s.W8,[],2);
+% m5=min(s.W5,[],2);
+% m6=min(s.W6,[],2);
+% m7=min(s.W7,[],2);
+% m8=min(s.W8,[],2);
 
 %ampiezza
 tot1=M1-m1;
 tot2=M2-m2;
 tot3=M3-m3;
 tot4=M4-m4;
-tot5=M5-m5;
-tot6=M6-m6;
-tot7=M7-m7;
-tot8=M8-m8;
+% tot5=M5-m5;
+% tot6=M6-m6;
+% tot7=M7-m7;
+% tot8=M8-m8;
 
 %indici
 n1=0; n2=0; n3=0; n4=0;
@@ -399,102 +399,102 @@ for i=1:10
     if(tot4(i)>=0.05) 
         n4=n4+1;
     end
-    if(tot5(i)>=0.05) 
-        n5=n5+1;
-    end
-    if(tot6(i)>=0.05) 
-        n6=n6+1;
-    end
-    if(tot7(i)>=0.05) 
-        n7=n7+1;
-    end
-    if(tot8(i)>=0.05) 
-        n8=n8+1;
-    end
+    % if(tot5(i)>=0.05) 
+    %     n5=n5+1;
+    % end
+    % if(tot6(i)>=0.05) 
+    %     n6=n6+1;
+    % end
+    % if(tot7(i)>=0.05) 
+    %     n7=n7+1;
+    % end
+    % if(tot8(i)>=0.05) 
+    %     n8=n8+1;
+    % end
 end
 
 n1=(n1/length(m1))*100;  
 n2=(n2/length(m1))*100; 
 n3=(n3/length(m1))*100; 
 n4=(n4/length(m1))*100; 
-n5=(n5/length(m1))*100;  
-n6=(n6/length(m1))*100; 
-n7=(n7/length(m1))*100; 
-n8=(n8/length(m1))*100; 
+% n5=(n5/length(m1))*100;  
+% n6=(n6/length(m1))*100; 
+% n7=(n7/length(m1))*100; 
+% n8=(n8/length(m1))*100; 
 
 formatSpec1="N° of Mwave above 50uV is %4.2f/100 for Quad Dx\n";
 formatSpec2="N° of Mwave above 50uV is %4.2f/100 for Hams Dx\n";
 formatSpec3="N° of Mwave above 50uV is %4.2f/100 for Gast Dx\n";
 formatSpec4="N° of Mwave above 50uV is %4.2f/100 for TA Dx\n\n";
-formatSpec5="N° of Mwave above 50uV is %4.2f/100 for Quad Sx\n";
-formatSpec6="N° of Mwave above 50uV is %4.2f/100 for Hams Sx\n";
-formatSpec7="N° of Mwave above 50uV is %4.2f/100 for Gast Sx\n";
-formatSpec8="N° of Mwave above 50uV is %4.2f/100 for TA Sx\n";
+% formatSpec5="N° of Mwave above 50uV is %4.2f/100 for Quad Sx\n";
+% formatSpec6="N° of Mwave above 50uV is %4.2f/100 for Hams Sx\n";
+% formatSpec7="N° of Mwave above 50uV is %4.2f/100 for Gast Sx\n";
+% formatSpec8="N° of Mwave above 50uV is %4.2f/100 for TA Sx\n";
 
 fprintf(formatSpec1,n1);
 fprintf(formatSpec2,n2);
 fprintf(formatSpec3,n3);
 fprintf(formatSpec4,n4);
-fprintf(formatSpec5,n5);
-fprintf(formatSpec6,n6);
-fprintf(formatSpec7,n7);
-fprintf(formatSpec8,n8);
+% fprintf(formatSpec5,n5);
+% fprintf(formatSpec6,n6);
+% fprintf(formatSpec7,n7);
+% fprintf(formatSpec8,n8);
 
-s1= struct('W5',Mwaves5,'W6',Mwaves6,'W7',Mwaves7,'W8',Mwaves8);
-
-M5=max(s1.W5,[],2);
-M6=max(s1.W6,[],2);
-M7=max(s1.W7,[],2);
-M8=max(s1.W8,[],2);
-
-%minimi
-
-m5=min(s1.W5,[],2);
-m6=min(s1.W6,[],2);
-m7=min(s1.W7,[],2);
-m8=min(s1.W8,[],2);
-
-%ampiezza
-
-tot5=M5-m5;
-tot6=M6-m6;
-tot7=M7-m7;
-tot8=M8-m8;
-
-%indici
-
-n5=0;
-n6=0;
-n7=0;
-n8=0;
-for i=1:10
-
-    if(tot5(i)>=0.05) 
-        n5=n5+1;
-    end
-    if(tot6(i)>=0.05) 
-        n6=n6+1;
-    end
-    if(tot7(i)>=0.05) 
-        n7=n7+1;
-    end
-    if(tot8(i)>=0.05) 
-        n8=n8+1;
-    end
-end
-
-n5=(n5/length(m1))*100;  
-n6=(n6/length(m1))*100; 
-n7=(n7/length(m1))*100; 
-n8=(n8/length(m1))*100; 
-
-
-formatSpec5="N° of Mwave above 50uV is %4.2f/100 for Quad Sx\n";
-formatSpec6="N° of Mwave above 50uV is %4.2f/100 for Hams Sx\n";
-formatSpec7="N° of Mwave above 50uV is %4.2f/100 for Gast Sx\n";
-formatSpec8="N° of Mwave above 50uV is %4.2f/100 for TA Sx\n";
-
-fprintf(formatSpec5,n5);
-fprintf(formatSpec6,n6);
-fprintf(formatSpec7,n7);
-fprintf(formatSpec8,n8);
+% s1= struct('W5',Mwaves5,'W6',Mwaves6,'W7',Mwaves7,'W8',Mwaves8);
+% 
+% M5=max(s1.W5,[],2);
+% M6=max(s1.W6,[],2);
+% M7=max(s1.W7,[],2);
+% M8=max(s1.W8,[],2);
+% 
+% %minimi
+% 
+% m5=min(s1.W5,[],2);
+% m6=min(s1.W6,[],2);
+% m7=min(s1.W7,[],2);
+% m8=min(s1.W8,[],2);
+% 
+% %ampiezza
+% 
+% tot5=M5-m5;
+% tot6=M6-m6;
+% tot7=M7-m7;
+% tot8=M8-m8;
+% 
+% %indici
+% 
+% n5=0;
+% n6=0;
+% n7=0;
+% n8=0;
+% for i=1:10
+% 
+%     if(tot5(i)>=0.05) 
+%         n5=n5+1;
+%     end
+%     if(tot6(i)>=0.05) 
+%         n6=n6+1;
+%     end
+%     if(tot7(i)>=0.05) 
+%         n7=n7+1;
+%     end
+%     if(tot8(i)>=0.05) 
+%         n8=n8+1;
+%     end
+% end
+% 
+% n5=(n5/length(m1))*100;  
+% n6=(n6/length(m1))*100; 
+% n7=(n7/length(m1))*100; 
+% n8=(n8/length(m1))*100; 
+% 
+% 
+% formatSpec5="N° of Mwave above 50uV is %4.2f/100 for Quad Sx\n";
+% formatSpec6="N° of Mwave above 50uV is %4.2f/100 for Hams Sx\n";
+% formatSpec7="N° of Mwave above 50uV is %4.2f/100 for Gast Sx\n";
+% formatSpec8="N° of Mwave above 50uV is %4.2f/100 for TA Sx\n";
+% 
+% fprintf(formatSpec5,n5);
+% fprintf(formatSpec6,n6);
+% fprintf(formatSpec7,n7);
+% fprintf(formatSpec8,n8);
