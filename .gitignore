@@ -94,6 +94,7 @@ compile_commands.json
 # MATLAB related files
 # OSX / *nix default autosave extension
 *.m~
+*.asv
 
 # Compiled MEX binaries (all platforms)
 *.mex*

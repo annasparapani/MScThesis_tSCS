@@ -15,9 +15,7 @@ clc
 
 [filename, pathname, filterindex] = uigetfile('*.mat', 'Pick a MATLAB  file');
 load(filename)
-
 EMG=[];
-%x=EMGdata.signals.values; %save EMG values in variable x
 plots_on=0;
 
 %% Format data into a time series 
@@ -78,7 +76,7 @@ end
 
 % Filtering
 fcutlow=10;   
-fcuthigh=250;   
+fcuthigh=100;   
 [z,p,k]=butter(4,[fcutlow,fcuthigh]/(Fs_EMG/2),'bandpass');
 [sos,g]=zp2sos(z,p,k); %apply filter to signal
 x_filt(:,:) = filtfilt(sos,g,x(:,:));
@@ -103,8 +101,6 @@ if plots_on
     subplot(4,1,4), plot(time,xfilter(:,8)), ylabel('mV'),xlabel('s'), grid off, title('SX TA'); %24
 end
 %% Peaks detection
-% min peak height depends is manual, I would like it to be automatically
-% set
 
 % Finding the Min Peak Height for every muscle, based on the std deviation
 % 1. Calculate standard deviation of the filtered signal
@@ -136,97 +132,52 @@ ta_dx=xfilter(:,4);
   gast_sx=xfilter(:,7);
 [pk8,locs8] = findpeaks(xfilter(:,8),"MinPeakDistance",meanPeakDistance,"MinPeakHeight",minPeakHeight(1,8));
   ta_sx=xfilter(:,8);
-%%
-% Graphs of filtered signals with peaks
-figure()
-title('Right Leg - filtered')
-plot(hams_dx), hold on, plot (locs1,pk1,'o'), ylabel('mV'), title(' DX Quad');
-avg_value = mean(hams_dx(i,:));
-% Plot a yellow band around the average value (±0.025)
-fill([1, length(hams_dx), length(hams_dx), 1], [avg_value + 0.025, avg_value + 0.025, avg_value - 0.025, avg_value - 0.025], 'y', 'EdgeColor', 'none', 'FaceAlpha', 0.3);
-
 
 if plots_on
     figure()
-    title('Right Leg - filtered')
     subplot(4,1,1), plot(quad_dx), hold on, plot (locs1,pk1,'o'), ylabel('mV'), title(' DX Quad');
-    % subplot(4,1,2), plot(hams_dx), hold on, plot (locs2,pk2,'o'), ylabel('mV'), title(' DX Hams');
-    % subplot(4,1,3), plot(gast_dx), hold on, plot (locs3,pk3,'o'), ylabel('mV'), title(' DX Gast');
-    % subplot(4,1,4), plot(ta_dx), hold on, plot (locs4,pk4,'o'), ylabel('mV'), title(' DX TA');
-    % 
-    % figure()
-    % title('Left Leg - filtered')
-    % subplot(4,1,1), plot(quad_sx), hold on, plot (locs5,pk5,'o'), ylabel('mV'), title(' SX Quad'); 
-    % subplot(4,1,2), plot(hams_sx), hold on, plot (locs6,pk6,'o'), ylabel('mV'), title(' SX Hams');
-    % subplot(4,1,3), plot(gast_sx), hold on, plot (locs7,pk7,'o'), ylabel('mV'), title(' SX Gast');
-    % subplot(4,1,4), plot(ta_sx), hold on, plot (locs8,pk8,'o'), ylabel('mV'), title(' SX TA');
+    avg_value = mean(hams_dx(i,:));
+    fill([1, length(hams_dx), length(hams_dx), 1], [avg_value + 0.025, avg_value + 0.025, avg_value - 0.025, avg_value - 0.025], 'y', 'EdgeColor', 'none', 'FaceAlpha', 0.3);
+    
+    subplot(4,1,2), plot(hams_dx), hold on, plot (locs2,pk2,'o'), ylabel('mV'), title(' DX Hams');
+    subplot(4,1,3), plot(gast_dx), hold on, plot (locs3,pk3,'o'), ylabel('mV'), title(' DX Gast');
+    subplot(4,1,4), plot(ta_dx), hold on, plot (locs4,pk4,'o'), ylabel('mV'), title(' DX TA');
+
+    figure()
+    title('Left Leg - filtered')
+    subplot(4,1,1), plot(quad_sx), hold on, plot (locs5,pk5,'o'), ylabel('mV'), title(' SX Quad'); 
+    subplot(4,1,2), plot(hams_sx), hold on, plot (locs6,pk6,'o'), ylabel('mV'), title(' SX Hams');
+    subplot(4,1,3), plot(gast_sx), hold on, plot (locs7,pk7,'o'), ylabel('mV'), title(' SX Gast');
+    subplot(4,1,4), plot(ta_sx), hold on, plot (locs8,pk8,'o'), ylabel('mV'), title(' SX TA');
 end
-%% M Waves detection based on slope trial
-% 
-% % Find M-wave start based on slope in a specific range after positive peak
-% m_wave_start_threshold = 0.0001; % You can adjust this threshold
-% samples_after_positive_peak = 20; % Adjust this range based on your signal characteristics
-% 
-% % Right leg
-% derivative_ta_dx = diff(ta_dx);
-% m_wave_start_ta_dx = locs1(1,1) + find(abs(derivative_ta_dx(locs1(1,1)+samples_after_positive_peak)) < m_wave_start_threshold, 1, 'first');
-% 
-% Mwaves4 = [];
-% Mwaves4(1, :) = ta_dx(m_wave_start_ta_dx: m_wave_start_ta_dx+52);
-% 
-% time_TA=(0:1/Fs_EMG:length(Mwaves4)/Fs_EMG-1/Fs_EMG)*1000; %ms
-% 
-% figure()
-% plot(time_Hams,Mwaves4(1,:))
-% title('M wave TA DX')
-% grid on    
-% ylabel ('mV')
-% xlabel('ms')
+%% M Waves detection based on zero crossing
+%Right leg
+Mwavestart_quadDx=findMwaveStart(quad_dx,locs1);
+Mwavestart_hamDx=findMwaveStart(hams_dx,locs2);
+Mwavestart_gastDx=findMwaveStart(gast_dx,locs3);
+Mwavestart_taDx = findMwaveStart(ta_dx, locs4); 
+% Left leg 
+Mwavestart_quadSx=findMwaveStart(quad_sx,locs5);
+Mwavestart_hamSx=findMwaveStart(hams_sx,locs6);
+Mwavestart_gastSx=findMwaveStart(gast_sx,locs7);
+Mwavestart_taSx = findMwaveStart(ta_sx, locs8); 
 
 %% M waves detection and plot
 
-startIdx_quad = locs1 +7; %7 samples di artefatto
-startIdx_hams = locs2 +7; %+ 3;
-startIdx_gast = locs3 +7;
-startIdx_ta = locs4 +7;
-startIsx_ta=locs5+1;
 duration_quad = 200; % ~100 ms
 duration_hams = 200; %Federico usava 52 (50ms) 15ms di latenza + 35ms di Mwave (1024Hz*50ms=57samples)
 
 % Right Leg M-wave
-Mwaves1 = [];
-for i = 1: length(startIdx_quad) 
-    Mwaves1(i, :) = quad_dx(startIdx_quad(i): startIdx_quad(i)+duration_quad);
-end
-Mwaves2 = [];
-for i = 1: length(startIdx_hams) 
-    Mwaves2(i, :) = hams_dx(startIdx_hams(i): startIdx_hams(i)+duration_hams);
-end
-Mwaves3 = [];
-for i = 1: length(startIdx_gast) 
-    Mwaves3(i, :) = gast_dx(startIdx_gast(i): startIdx_gast(i)+duration_quad);
-end
-Mwaves4 = [];
-for i = 1: length(startIdx_ta) 
-    Mwaves4(i, :) = ta_dx(startIdx_ta(i): startIdx_ta(i)+duration_hams);
-end
-% Left Leg M-wave
-Mwaves5 = [];
-for i = 1: length(startIdx_quad) 
-    Mwaves5(i, :) = quad_sx(startIdx_quad(i): startIdx_quad(i)+duration_quad);
-end
-Mwaves6 = [];
-for i = 1: length(startIdx_hams) 
-    Mwaves6(i, :) = hams_sx(startIdx_hams(i): startIdx_hams(i)+duration_hams);
-end
-Mwaves7 = [];
-for i = 1: length(startIdx_gast) 
-    Mwaves7(i, :) = gast_sx(startIdx_gast(i): startIdx_gast(i)+duration_quad);
-end
-Mwaves8 = [];
-for i = 1: length(startIdx_ta) 
-    Mwaves8(i, :) = ta_sx(startIdx_ta(i): startIdx_ta(i)+duration_hams);
-end
+Mwaves1=buildMwave(Mwavestart_quadDx, duration_quad, quad_dx); 
+Mwaves2=buildMwave(Mwavestart_hamDx, duration_hams, hams_dx); 
+Mwaves3=buildMwave(Mwavestart_gastDx, duration_quad, gast_dx);
+Mwaves4=buildMwave(Mwavestart_taDx, duration_hams, ta_dx);
+
+%Left Leg M-wave
+Mwaves5=buildMwave(Mwavestart_quadSx, duration_quad, quad_sx); 
+Mwaves6=buildMwave(Mwavestart_hamSx, duration_hams, hams_sx); 
+Mwaves7=buildMwave(Mwavestart_gastSx, duration_quad, gast_sx);
+Mwaves8=buildMwave(Mwavestart_taSx, duration_hams, ta_sx);
 
 % M-WAVES GRAPHS
 if plots_on
@@ -234,14 +185,19 @@ if plots_on
     plotMwave("M wave Hams DX", Mwaves2, Fs_EMG);
     plotMwave("M wave Gast DX", Mwaves3, Fs_EMG);
     plotMwave("M wave TA DX", Mwaves4, Fs_EMG);
-    % plotMwave("M wave Quad SX", Mwaves5, Fs_EMG);
-    % plotMwave("M wave Hams SX", Mwaves6, Fs_EMG);
-    % plotMwave("M wave Gast SX", Mwaves7, Fs_EMG);
-    % plotMwave("M wave TA SX", Mwaves8, Fs_EMG);
+    plotMwave("M wave Quad SX", Mwaves5, Fs_EMG);
+    plotMwave("M wave Hams SX", Mwaves6, Fs_EMG);
+    plotMwave("M wave Gast SX", Mwaves7, Fs_EMG);
+    plotMwave("M wave TA SX", Mwaves8, Fs_EMG);
 end
 
-%% M waves peaks detection
-s=struct('W1',Mwaves1,'W2',Mwaves2,'W3',Mwaves3,'W4',Mwaves4,'W5',Mwaves5,'W6',Mwaves6,'W7',Mwaves7,'W8',Mwaves8);
+%% Detection of M waves above threshold
+% studio del riflesso PRM a valle del protocollo 1 e 2 che indichi il 
+% valore di soglia motoria per gli 8 gruppi muscolari e la % di 
+% depressione post-sinaptica nel caso del protocollo 2.
+
+s=struct('W1',Mwaves1,'W2',Mwaves2,'W3',Mwaves3,'W4',Mwaves4,'W5', ...
+    Mwaves5,'W6',Mwaves6,'W7',Mwaves7,'W8',Mwaves8);
 % maxima 
 M1=max(s.W1,[],2); M2=max(s.W2,[],2); M3=max(s.W3,[],2); M4=max(s.W4,[],2);
 M5=max(s.W5,[],2); M6=max(s.W6,[],2); M7=max(s.W7,[],2); M8=max(s.W8,[],2);
@@ -280,3 +236,76 @@ fprintf(formatSpec5,n5);
 fprintf(formatSpec6,n6);
 fprintf(formatSpec7,n7);
 fprintf(formatSpec8,n8);
+
+%% PAD Identification 
+
+%% FUNCTIONS
+
+function plotMwave(titleStr, MwaveArray, Frequency)
+    % Function to plot the M wave
+    timeArray= (0:1/Frequency:length(MwaveArray)/Frequency-1/Frequency)*1000; %ms
+    figure;
+    for i = 1:size(MwaveArray,1)
+        if (rem(size(MwaveArray),10))~=0
+            flag=1;
+        else flag=0;
+        end 
+        subplot(fix(size(MwaveArray,1)/10)+flag, 10, i);
+        plot(timeArray, MwaveArray(i,:),'LineWidth',1.2);
+        title(titleStr);
+        grid on;
+        ylabel('mV');
+        xlabel('time[ms]');
+        
+        % Calculate the average value
+        avg_value = mean(MwaveArray(i,:));
+        % Plot a band around the average value (±0.025)
+        hold on;
+        fill([timeArray, fliplr(timeArray)], [ones(size(timeArray))*(avg_value + 0.025), fliplr(ones(size(timeArray))*(avg_value - 0.025))], 'y', 'EdgeColor', 'none', 'FaceAlpha', 0.3);
+        
+        % Add a red horizontal line at y = 0.05
+        hold on;
+        yline(0.05, 'r', 'LineWidth', 1.5);
+
+        % Set y-axis limits to maximum + 0.1
+        ylim([min(MwaveArray(i,:)-0.1) max(MwaveArray(i,:))+0.1]) % y limit scaled to the graph values
+
+        hold off;
+    end
+end
+
+function Mwavestart = findMwaveStart(signal, locs)
+% function to find the start of each Mwave after each stimulation artifact
+% as a starting parameters it uses the zero crossing of the signal (before
+% the zero crossing it's considered artefact, after that M wave) 
+    Mwavestart = zeros(size(locs));
+    for i = 1:length(locs)
+        count_zeroes = 0;
+        if i<length(locs)
+            next_th=locs(i+1)-locs(i);
+        else
+            next_th=length(signal)-locs(i);
+        end 
+        for j = 1:next_th % Find zero-crossings in the 40 samples after the artifact
+            if (signal(locs(i)+j)*signal(locs(i)+j+1)) < 0
+                count_zeroes = count_zeroes + 1; 
+            end
+            if count_zeroes == 2
+                count_zeroes = 0; 
+                Mwavestart(i) = locs(i) + j; 
+                break; % exit the loop once M wave start is found
+            end 
+        end
+    end
+end
+
+% Function to build the Mwaves from the starting points computed in the
+% previous function
+function Mwaves = buildMwave(Mwavestart, duration, signal)
+    Mwaves1 = [];
+    for i = 1:length(Mwavestart)
+        Mwaves(i, :) = signal(Mwavestart(i):Mwavestart(i)+duration);
+    end
+end
+
+ 

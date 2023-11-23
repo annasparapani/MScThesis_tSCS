@@ -1,4 +1,10 @@
-
+%% TITLE: EMG data analysis for tSCS protocol 1 (single pulses) 
+%  AUTHOR: Anna Sparpani
+%  DATE: nov. 23
+% The following code is used to analyse the EMG data acquired during
+% transcutaneous spinal cord stimulation. The main interest of the signal
+% analysis is the identification of the PRM reflex, which is observed
+% around 50micros after the stimulation artefact on the EMG baseline. 
 clc
 clear all
 close all

@@ -1,4 +1,4 @@
-%% TITLE: EMG data analysis for tSCS protocol 1 (single pulses) 
+%% TITLE: EMG data analysis for tSCS protocol 2 (double pulses) 
 %  AUTHOR: Anna Sparpani
 %  DATE: nov. 23
 % The following code is used to analyse the EMG data acquired during
@@ -75,7 +75,7 @@ end
 %% Signal processing
 % Filtering
 fcutlow=10;   
-fcuthigh=350;   
+fcuthigh=500;   
 [z,p,k]=butter(4,[fcutlow,fcuthigh]/(Fs_EMG/2),'bandpass');
 [sos,g]=zp2sos(z,p,k); %apply filter to signal
 x_filt(:,:) = filtfilt(sos,g,x(:,:));
@@ -83,7 +83,7 @@ x_filt(:,:) = filtfilt(sos,g,x(:,:));
 xfilter = filter(b, a, x_filt(:,:)); %apply filter
 [pff,ff]=pwelch(xfilter(:,1),[],[],[],Fs_EMG);
 
-% Filetered data plots
+% Filtered data plots
 if plots_on
     figure()
     title('Right Leg')
@@ -108,8 +108,7 @@ minPeakHeight_multiplier = 5; % You can adjust this multiplier, I kept it quite
                           % high because the stimulation artefacts are much 
                           % higher than the rest of the signal
 minPeakHeight = minPeakHeight_multiplier * std_dev;
-
-meanPeakDistance=600; % mean peak distance 1200 = 0.6s 
+meanPeakDistance=15; % mean peak distance 1200 = 0.6s 
 
 % Right leg
 [pk1,locs1] = findpeaks(xfilter(:,1),"MinPeakDistance",meanPeakDistance,"MinPeakHeight",minPeakHeight(1,1));
@@ -148,160 +147,116 @@ if plots_on
     subplot(4,1,3), plot(gast_sx), hold on, plot (locs7,pk7,'o'), ylabel('mV'), title(' SX Gast');
     subplot(4,1,4), plot(ta_sx), hold on, plot (locs8,pk8,'o'), ylabel('mV'), title(' SX TA');
 end
-%% M Waves detection based on zero crossing
-%Right leg
-Mwavestart_quadDx=findMwaveStart(quad_dx,locs1);
-Mwavestart_hamDx=findMwaveStart(hams_dx,locs2);
-Mwavestart_gastDx=findMwaveStart(gast_dx,locs3);
-Mwavestart_taDx = findMwaveStart(ta_dx, locs4); 
-% Left leg 
-Mwavestart_quadSx=findMwaveStart(quad_sx,locs5);
-Mwavestart_hamSx=findMwaveStart(hams_sx,locs6);
-Mwavestart_gastSx=findMwaveStart(gast_sx,locs7);
-Mwavestart_taSx = findMwaveStart(ta_sx, locs8); 
 
-%% M waves detection and plot
+%% Double artifacts detection
+% if artifacts are approximately 50 ms from each other -> in one single
+% variable
 
-duration_quad = 200; % ~100 ms
-duration_hams = 200; %Federico usava 52 (50ms) 15ms di latenza + 35ms di Mwave (1024Hz*50ms=57samples)
+% Right Leg
+[DoubletGroup_quadDx, peakGroup_quadDx] = buildDoubletsGroups(quad_dx, locs1); 
+[DoubletGroup_hamsDx, peakGroup_hamsDx] = buildDoubletsGroups(hams_dx, locs2); 
+[DoubletGroup_gastDx, peakGroup_gastDx] = buildDoubletsGroups(gast_dx, locs3); 
+[DoubletGroup_taDx, peakGroup_taDx] = buildDoubletsGroups(ta_dx, locs4); 
+% Left Leg
+[DoubletGroup_quadSx, peakGroup_quadSx] = buildDoubletsGroups(quad_dx, locs5); 
+[DoubletGroup_hamsSx, peakGroup_hamsSx] = buildDoubletsGroups(hams_sx, locs6); 
+[DoubletGroup_gastSx, peakGroup_gastSx] = buildDoubletsGroups(gast_sx, locs7); 
+[DoubletGroup_taSx, peakGroup_taSx] = buildDoubletsGroups(ta_sx, locs8); 
 
-% Right Leg M-wave
-Mwaves1=buildMwave(Mwavestart_quadDx, duration_quad, quad_dx); 
-Mwaves2=buildMwave(Mwavestart_hamDx, duration_hams, hams_dx); 
-Mwaves3=buildMwave(Mwavestart_gastDx, duration_quad, gast_dx);
-Mwaves4=buildMwave(Mwavestart_taDx, duration_hams, ta_dx);
-
-%Left Leg M-wave
-Mwaves5=buildMwave(Mwavestart_quadSx, duration_quad, quad_sx); 
-Mwaves6=buildMwave(Mwavestart_hamSx, duration_hams, hams_sx); 
-Mwaves7=buildMwave(Mwavestart_gastSx, duration_quad, gast_sx);
-Mwaves8=buildMwave(Mwavestart_taSx, duration_hams, ta_sx);
-
-% M-WAVES GRAPHS
+% Plot stimulations and respective M waves
 if plots_on
-    plotMwave("M wave Quad DX", Mwaves1, Fs_EMG);
-    plotMwave("M wave Hams DX", Mwaves2, Fs_EMG);
-    plotMwave("M wave Gast DX", Mwaves3, Fs_EMG);
-    plotMwave("M wave TA DX", Mwaves4, Fs_EMG);
-    % plotMwave("M wave Quad SX", Mwaves5, Fs_EMG);
-    % plotMwave("M wave Hams SX", Mwaves6, Fs_EMG);
-    % plotMwave("M wave Gast SX", Mwaves7, Fs_EMG);
-    % plotMwave("M wave TA SX", Mwaves8, Fs_EMG);
+    plotDoubleWave("Quad DX", DoubletGroup_quadDx, Fs_EMG); 
+    plotDoubleWave("Hams DX", DoubletGroup_hamsDx, Fs_EMG); 
+    plotDoubleWave("Gast DX", DoubletGroup_gastDx, Fs_EMG); 
+    plotDoubleWave("TA DX", DoubletGroup_taDx, Fs_EMG); 
+    
+    plotDoubleWave("Quad SX", DoubletGroup_quadSx, Fs_EMG); 
+    plotDoubleWave("Hams SX", DoubletGroup_hamsSx, Fs_EMG); 
+    plotDoubleWave("Gast SX", DoubletGroup_gastSx, Fs_EMG); 
+    plotDoubleWave("TA SX", DoubletGroup_taSx, Fs_EMG); 
 end
 
-%% Detection of M waves above threshold
-% studio del riflesso PRM a valle del protocollo 1 e 2 che indichi il 
-% valore di soglia motoria per gli 8 gruppi muscolari e la % di 
-% depressione post-sinaptica nel caso del protocollo 2.
+%% Detect M wave after each artifact
 
-s=struct('W1',Mwaves1,'W2',Mwaves2,'W3',Mwaves3,'W4',Mwaves4,'W5', ...
-    Mwaves5,'W6',Mwaves6,'W7',Mwaves7,'W8',Mwaves8);
-% maxima 
-M1=max(s.W1,[],2); M2=max(s.W2,[],2); M3=max(s.W3,[],2); M4=max(s.W4,[],2);
-M5=max(s.W5,[],2); M6=max(s.W6,[],2); M7=max(s.W7,[],2); M8=max(s.W8,[],2);
+std_dev = std(DoubletGroup_quadDx{1,1});
+% 2. Set a threshold as a multiple of the standard deviation
+minPeakHeight_multiplier = 5; % You can adjust this multiplier, I kept it quite 
+                          % high because the stimulation artefacts are much 
+                          % higher than the rest of the signal
+minPeakHeight = minPeakHeight_multiplier * std_dev;
+meanPeakDistance=15; 
+% find peaks in each group 
+% take 2 biggest peaks
+% extract data following 2 peaks 
 
-% minima
-m1=min(s.W1,[],2); m2=min(s.W2,[],2); m3=min(s.W3,[],2); m4=min(s.W4,[],2);
-m5=min(s.W5,[],2); m6=min(s.W6,[],2); m7=min(s.W7,[],2); m8=min(s.W8,[],2);
+[pk1,locs1] = findpeaks(DoubletGroup_quadDx{1,1}(:,1),"MinPeakDistance", ...
+    meanPeakDistance,"MinPeakHeight",minPeakHeight(1));
+% --> finish here
 
-%indici
-n1=0; n2=0; n3=0; n4=0; n5=0; n6=0; n7=0; n8=0;
-
-n1 = ((sum((M1-m1) >= 0.05))/length(m1))*100;
-n2 = ((sum((M2-m2) >= 0.05))/length(m2))*100;
-n3 = ((sum((M3-m3) >= 0.05))/length(m3))*100;
-n4 = ((sum((M4-m4) >= 0.05))/length(m4))*100;
-n5 = ((sum((M5-m5) >= 0.05))/length(m5))*100;
-n6 = ((sum((M6-m6) >= 0.05))/length(m6))*100;
-n7 = ((sum((M7-m7) >= 0.05))/length(m7))*100;
-n8 = ((sum((M8-m8) >= 0.05))/length(m8))*100;
+%% Compare amplitudes of 1st and 2nd M waves
 
 
-formatSpec1="N° of Mwave above 50uV is %4.2f/100 for Quad Dx\n";
-formatSpec2="N° of Mwave above 50uV is %4.2f/100 for Hams Dx\n";
-formatSpec3="N° of Mwave above 50uV is %4.2f/100 for Gast Dx\n";
-formatSpec4="N° of Mwave above 50uV is %4.2f/100 for TA Dx\n\n";
-formatSpec5="N° of Mwave above 50uV is %4.2f/100 for Quad Sx\n";
-formatSpec6="N° of Mwave above 50uV is %4.2f/100 for Hams Sx\n";
-formatSpec7="N° of Mwave above 50uV is %4.2f/100 for Gast Sx\n";
-formatSpec8="N° of Mwave above 50uV is %4.2f/100 for TA Sx\n";
+%% ************************************************************************
+% ************************ FUNCTIONS **************************************
+% *************************************************************************
 
-fprintf(formatSpec1,n1);
-fprintf(formatSpec2,n2);
-fprintf(formatSpec3,n3);
-fprintf(formatSpec4,n4);
-fprintf(formatSpec5,n5);
-fprintf(formatSpec6,n6);
-fprintf(formatSpec7,n7);
-fprintf(formatSpec8,n8);
+ function [doubletsGroup, peakGroup] = buildDoubletsGroups(signal, peaks)
+  % Function to find the peaks near to each other and to construct the
+  % groups for each doublet application 
+    max_distance_between_peaks = 1000; % define peak groups
+   
+    peakGroup = cell(0); % Initialize variables to store the groups
+    current_group = [];
+    
+    % Iterate through the peak locations
+    for i = 1:length(peaks)-1
+        % Check if the distance between the current peak and the next peak is within the limit
+        if peaks(i+1) - peaks(i) < max_distance_between_peaks
+            % Add the current peak to the current group
+            current_group = [current_group, peaks(i)];
+        else
+            % If the distance is larger, finalize the current group and start a new one
+            if ~isempty(current_group)
+                current_group = [current_group, peaks(i)]; % Add the last peak to the group
+                peakGroup{end+1} = current_group; % Save the current group
+                current_group = []; % Reset for the next group
+            else % is the current group is empty
+                peakGroup{end+1} = peaks(i);
+            end
+        end
+    end
+    
+    peak_groups_size=size(peakGroup); 
+    groups_number=peak_groups_size(2); 
+    doubletsGroup=cell(1,groups_number);
+    for i=1:groups_number
+        doubletsGroup{i}= signal((peakGroup{1,1}(1)-10):(peakGroup{1,1}(end)+100));
+    end 
+ end
 
-%% FUNCTIONS
-
-function plotMwave(titleStr, MwaveArray, Frequency)
-    % Function to plot the M wave
-    timeArray= (0:1/Frequency:length(MwaveArray)/Frequency-1/Frequency)*1000; %ms
+ function plotDoubleWave(titleStr, DoubletGroup, Frequency)
+    % Function to plot the double stimatulation + m waves
     figure;
-    for i = 1:size(MwaveArray,1)
-        if (rem(size(MwaveArray),10))~=0
+    for i = 1:size(DoubletGroup,2)
+        if (rem(size(DoubletGroup),5))~=0
             flag=1;
         else flag=0;
         end 
-        subplot(fix(size(MwaveArray,1)/10)+flag, 10, i);
-        plot(timeArray, MwaveArray(i,:),'LineWidth',1.2);
+        timeArray= (0:1/Frequency:length(DoubletGroup{i})/Frequency-1/Frequency)*1000; %ms
+        subplot(fix(size(DoubletGroup,2)/5)+flag, 5, i);
+        plot(timeArray, DoubletGroup{i},'LineWidth',1.2);
         title(titleStr);
         grid on;
         ylabel('mV');
         xlabel('time[ms]');
-        
-        % Calculate the average value
-        avg_value = mean(MwaveArray(i,:));
-        % Plot a band around the average value (±0.025)
-        hold on;
-        fill([timeArray, fliplr(timeArray)], [ones(size(timeArray))*(avg_value + 0.025), fliplr(ones(size(timeArray))*(avg_value - 0.025))], 'y', 'EdgeColor', 'none', 'FaceAlpha', 0.3);
         
         % Add a red horizontal line at y = 0.05
         hold on;
         yline(0.05, 'r', 'LineWidth', 1.5);
 
         % Set y-axis limits to maximum + 0.1
-        ylim([min(MwaveArray(i,:)-0.1) max(MwaveArray(i,:))+0.1]) % y limit scaled to the graph values
+        %ylim([min(MwaveArray(i,:)-0.1) max(MwaveArray(i,:))+0.1]) % y limit scaled to the graph values
 
         hold off;
     end
-end
-
-function Mwavestart = findMwaveStart(signal, locs)
-% function to find the start of each Mwave after each stimulation artifact
-% as a starting parameters it uses the zero crossing of the signal (before
-% the zero crossing it's considered artefact, after that M wave) 
-    Mwavestart = zeros(size(locs));
-    for i = 1:length(locs)
-        count_zeroes = 0;
-        if i<length(locs)
-            next_th=locs(i+1)-locs(i);
-        else
-            next_th=length(signal)-locs(i);
-        end 
-        for j = 1:next_th % Find zero-crossings in the 40 samples after the artifact
-            if (signal(locs(i)+j)*signal(locs(i)+j+1)) < 0
-                count_zeroes = count_zeroes + 1; 
-            end
-            if count_zeroes == 2
-                count_zeroes = 0; 
-                Mwavestart(i) = locs(i) + j; 
-                break; % exit the loop once M wave start is found
-            end 
-        end
-    end
-end
-
-% Function to build the Mwaves from the starting points computed in the
-% previous function
-function Mwaves = buildMwave(Mwavestart, duration, signal)
-    Mwaves1 = [];
-    for i = 1:length(Mwavestart)
-        Mwaves(i, :) = signal(Mwavestart(i):Mwavestart(i)+duration);
-    end
-end
-
- 
+ end 
