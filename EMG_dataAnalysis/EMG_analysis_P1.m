@@ -75,7 +75,7 @@ end
 %% Signal processing
 % Filtering
 fcutlow=10;   
-fcuthigh=350;   
+fcuthigh=450;   
 [z,p,k]=butter(4,[fcutlow,fcuthigh]/(Fs_EMG/2),'bandpass');
 [sos,g]=zp2sos(z,p,k); %apply filter to signal
 x_filt(:,:) = filtfilt(sos,g,x(:,:));
@@ -149,6 +149,8 @@ if plots_on
     subplot(4,1,4), plot(ta_sx), hold on, plot (locs8,pk8,'o'), ylabel('mV'), title(' SX TA');
 end
 %% M Waves detection based on zero crossing
+% the function sets as start of the Mwave when the signal crosses the
+% zero axis for the 2nd time after the peak
 %Right leg
 Mwavestart_quadDx=findMwaveStart(quad_dx,locs1);
 Mwavestart_hamDx=findMwaveStart(hams_dx,locs2);
@@ -162,8 +164,8 @@ Mwavestart_taSx = findMwaveStart(ta_sx, locs8);
 
 %% M waves detection and plot
 
-duration_quad = 200; % ~100 ms
-duration_hams = 200; %Federico usava 52 (50ms) 15ms di latenza + 35ms di Mwave (1024Hz*50ms=57samples)
+duration_quad = 100; % ~100 ms
+duration_hams = 100; %Federico usava 52 (50ms) 15ms di latenza + 35ms di Mwave (1024Hz*50ms=57samples)
 
 % Right Leg M-wave
 Mwaves1=buildMwave(Mwavestart_quadDx, duration_quad, quad_dx); 
@@ -172,7 +174,7 @@ Mwaves3=buildMwave(Mwavestart_gastDx, duration_quad, gast_dx);
 Mwaves4=buildMwave(Mwavestart_taDx, duration_hams, ta_dx);
 
 %Left Leg M-wave
-Mwaves5=buildMwave(Mwavestart_quadSx, duration_quad, quad_sx); 
+Mwaves5=buildMwave(Mwavestart_quadSx, duration_quad, quad_sx); % +10 perchè M5 aveva degli artefatti dopo il 2nd zero crossing
 Mwaves6=buildMwave(Mwavestart_hamSx, duration_hams, hams_sx); 
 Mwaves7=buildMwave(Mwavestart_gastSx, duration_quad, gast_sx);
 Mwaves8=buildMwave(Mwavestart_taSx, duration_hams, ta_sx);
@@ -183,10 +185,10 @@ if plots_on
     plotMwave("M wave Hams DX", Mwaves2, Fs_EMG);
     plotMwave("M wave Gast DX", Mwaves3, Fs_EMG);
     plotMwave("M wave TA DX", Mwaves4, Fs_EMG);
-    % plotMwave("M wave Quad SX", Mwaves5, Fs_EMG);
-    % plotMwave("M wave Hams SX", Mwaves6, Fs_EMG);
-    % plotMwave("M wave Gast SX", Mwaves7, Fs_EMG);
-    % plotMwave("M wave TA SX", Mwaves8, Fs_EMG);
+    plotMwave("M wave Quad SX", Mwaves5, Fs_EMG);
+    plotMwave("M wave Hams SX", Mwaves6, Fs_EMG);
+    plotMwave("M wave Gast SX", Mwaves7, Fs_EMG);
+    plotMwave("M wave TA SX", Mwaves8, Fs_EMG);
 end
 
 %% Detection of M waves above threshold
@@ -194,8 +196,19 @@ end
 % valore di soglia motoria per gli 8 gruppi muscolari e la % di 
 % depressione post-sinaptica nel caso del protocollo 2.
 
-s=struct('W1',Mwaves1,'W2',Mwaves2,'W3',Mwaves3,'W4',Mwaves4,'W5', ...
+s=struct('W1',Mwaves1,'W2',Mwaves2,'W3',Mwaves3(:,10:end),'W4',Mwaves4,'W5', ...
     Mwaves5,'W6',Mwaves6,'W7',Mwaves7,'W8',Mwaves8);
+
+[peaksM1, locsM1]=findMwavePeak(s.W1, 0.005, 50); 
+[peaksM2, locsM2]=findMwavePeak(s.W2, 0.005, 50); 
+[peaksM3, locsM3]=findMwavePeak(s.W3, 0.005, 50); 
+[peaksM4, locsM4]=findMwavePeak(s.W4, 0.005, 50); 
+[peaksM5, locsM5]=findMwavePeak(s.W5, 0.005, 50); 
+[peaksM6, locsM6]=findMwavePeak(s.W6, 0.005, 50); 
+[peaksM7, locsM7]=findMwavePeak(s.W7, 0.005, 50); 
+[peaksM8, locsM8]=findMwavePeak(s.W8, 0.005, 50); 
+
+%%
 % maxima 
 M1=max(s.W1,[],2); M2=max(s.W2,[],2); M3=max(s.W3,[],2); M4=max(s.W4,[],2);
 M5=max(s.W5,[],2); M6=max(s.W6,[],2); M7=max(s.W7,[],2); M8=max(s.W8,[],2);
@@ -235,7 +248,9 @@ fprintf(formatSpec6,n6);
 fprintf(formatSpec7,n7);
 fprintf(formatSpec8,n8);
 
-%% FUNCTIONS
+%% ************************************************************************
+% ************************ FUNCTIONS **************************************
+% *************************************************************************
 
 function plotMwave(titleStr, MwaveArray, Frequency)
     % Function to plot the M wave
@@ -271,28 +286,43 @@ function plotMwave(titleStr, MwaveArray, Frequency)
 end
 
 function Mwavestart = findMwaveStart(signal, locs)
-% function to find the start of each Mwave after each stimulation artifact
-% as a starting parameters it uses the zero crossing of the signal (before
-% the zero crossing it's considered artefact, after that M wave) 
     Mwavestart = zeros(size(locs));
+    
     for i = 1:length(locs)
         count_zeroes = 0;
-        if i<length(locs)
-            next_th=locs(i+1)-locs(i);
+        
+        if i < length(locs)
+            next_th = locs(i + 1) - locs(i);
         else
-            next_th=length(signal)-locs(i);
-        end 
+            next_th = length(signal) - locs(i);
+        end
+        
         for j = 1:next_th % Find zero-crossings in the 40 samples after the artifact
-            if (signal(locs(i)+j)*signal(locs(i)+j+1)) < 0
-                count_zeroes = count_zeroes + 1; 
+            if (signal(locs(i) + j) * signal(locs(i) + j + 1)) < 0
+                count_zeroes = count_zeroes + 1;
             end
+            
             if count_zeroes == 2
-                count_zeroes = 0; 
-                Mwavestart(i) = locs(i) + j; 
+                count_zeroes = 0;
+                Mwavestart(i) = locs(i) + j;
+                % Check steepness after the identified start
+                steepness_after_start = calculateSteepness(signal, Mwavestart(i));
+                % Check steepness after the peak
+                steepness_after_peak = calculateSteepness(signal, locs(i) + 1);
+                % If steepness is similar, move the start 10 steps forward
+                if abs(steepness_after_start - steepness_after_peak) < 2.5
+                    Mwavestart(i) = Mwavestart(i) + 10;
+                end
+                
                 break; % exit the loop once M wave start is found
-            end 
+            end
         end
     end
+end
+
+function steepness = calculateSteepness(signal, index)
+    % Calculate the steepness (slope) at the specified index
+    steepness = (signal(index + 1) - signal(index)) / 1; % Assuming a unit step
 end
 
 % Function to build the Mwaves from the starting points computed in the
@@ -304,4 +334,37 @@ function Mwaves = buildMwave(Mwavestart, duration, signal)
     end
 end
 
- 
+% Find peaks within in an M wave 
+function [peaks, locs] = findMwavePeak(signal, MinPeakHeight, MinPeakDistance)
+    Frequency = 1024; 
+    timeArray= (0:1/Frequency:length(signal)/Frequency-1/Frequency)*1000; %ms
+    figure;
+    for i = 1:size(signal,1)
+        [peaks, locs] = findpeaks(signal(i,:),"MinPeakDistance", ...
+                      MinPeakDistance, "MinPeakHeight",MinPeakHeight);
+        if (rem(size(signal),10))~=0
+            flag=1;
+        else flag=0;
+        end 
+        subplot(fix(size(signal,1)/10)+flag, 10, i);
+        plot(timeArray, signal(i,:),'LineWidth',1.2);
+        title("trial");
+        grid on;
+        ylabel('mV');
+        xlabel('time[ms]');
+
+        % Calculate the average value
+        avg_value = mean(signal(i,:));
+        % Plot a band around the average value (±0.025)
+        hold on;
+        fill([timeArray, fliplr(timeArray)], [ones(size(timeArray))* ...
+            (avg_value + 0.025), fliplr(ones(size(timeArray))*(avg_value - ...
+            0.025))], 'y', 'EdgeColor', 'none', 'FaceAlpha', 0.3);
+        % Add a red horizontal line at y = 0.05
+        hold on;
+        yline(0.05, 'r', 'LineWidth', 1.5);
+        hold on
+        plot (locs, peaks, 'o'), ylabel('mV');
+        hold off;
+    end
+end 

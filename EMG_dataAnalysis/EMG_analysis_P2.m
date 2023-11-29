@@ -75,7 +75,7 @@ end
 %% Signal processing
 % Filtering
 fcutlow=10;   
-fcuthigh=500;   
+fcuthigh=350;   
 [z,p,k]=butter(4,[fcutlow,fcuthigh]/(Fs_EMG/2),'bandpass');
 [sos,g]=zp2sos(z,p,k); %apply filter to signal
 x_filt(:,:) = filtfilt(sos,g,x(:,:));
@@ -148,20 +148,28 @@ if plots_on
     subplot(4,1,4), plot(ta_sx), hold on, plot (locs8,pk8,'o'), ylabel('mV'), title(' SX TA');
 end
 
-%% Double artifacts detection
+%% Double artifacts detection and grouping
 % if artifacts are approximately 50 ms from each other -> in one single
-% variable
+% group
 
 % Right Leg
-[DoubletGroup_quadDx, peakGroup_quadDx] = buildDoubletsGroups(quad_dx, locs1); 
-[DoubletGroup_hamsDx, peakGroup_hamsDx] = buildDoubletsGroups(hams_dx, locs2); 
-[DoubletGroup_gastDx, peakGroup_gastDx] = buildDoubletsGroups(gast_dx, locs3); 
-[DoubletGroup_taDx, peakGroup_taDx] = buildDoubletsGroups(ta_dx, locs4); 
+[DoubletGroup_quadDx, peakLocsGroup_quadDx, peakValuesGrouped_quadDx, ...
+    peakLocsLocalGroup_quadDx] = buildDoubletsGroups(quad_dx, locs1); 
+[DoubletGroup_hamsDx, peakLocsGroup_hamsDx, peakValuesGrouped_hamsDx, ...
+    peakLocsLocalGroup_hamsDx] = buildDoubletsGroups(hams_dx, locs2); 
+[DoubletGroup_gastDx, peakLocsGroup_gastDx, peakValuesGrouped_gastDx, ...
+    peakLocsLocalGroup_gastDx] = buildDoubletsGroups(gast_dx, locs3); 
+[DoubletGroup_taDx, peakLocsGroup_taDx, peakValuesGrouped_taDx, ...
+    peakLocsLocalGroup_taDx] = buildDoubletsGroups(ta_dx, locs4); 
 % Left Leg
-[DoubletGroup_quadSx, peakGroup_quadSx] = buildDoubletsGroups(quad_dx, locs5); 
-[DoubletGroup_hamsSx, peakGroup_hamsSx] = buildDoubletsGroups(hams_sx, locs6); 
-[DoubletGroup_gastSx, peakGroup_gastSx] = buildDoubletsGroups(gast_sx, locs7); 
-[DoubletGroup_taSx, peakGroup_taSx] = buildDoubletsGroups(ta_sx, locs8); 
+[DoubletGroup_quadSx, peakLocsGroup_quadSx, peakValuesGrouped_quadSx, ...
+    peakLocsLocalGroup_quadSx] = buildDoubletsGroups(quad_dx, locs5); 
+[DoubletGroup_hamsSx, peakLocsGroup_hamsSx, peakValuesGrouped_hamsSx, ...
+    peakLocsLocalGroup_hamsSx] = buildDoubletsGroups(hams_sx, locs6); 
+[DoubletGroup_gastSx, peakLocsGroup_gastSx, peakValuesGrouped_gastSx, ...
+    peakLocsLocalGroup_gastSx] = buildDoubletsGroups(gast_sx, locs7); 
+[DoubletGroup_taSx, peakLocsGroup_taSx, peakValuesGrouped_taSx, ...
+    peakLocsLocalGroup_taSx] = buildDoubletsGroups(ta_sx, locs8); 
 
 % Plot stimulations and respective M waves
 if plots_on
@@ -169,43 +177,74 @@ if plots_on
     plotDoubleWave("Hams DX", DoubletGroup_hamsDx, Fs_EMG); 
     plotDoubleWave("Gast DX", DoubletGroup_gastDx, Fs_EMG); 
     plotDoubleWave("TA DX", DoubletGroup_taDx, Fs_EMG); 
-    
+
     plotDoubleWave("Quad SX", DoubletGroup_quadSx, Fs_EMG); 
     plotDoubleWave("Hams SX", DoubletGroup_hamsSx, Fs_EMG); 
     plotDoubleWave("Gast SX", DoubletGroup_gastSx, Fs_EMG); 
     plotDoubleWave("TA SX", DoubletGroup_taSx, Fs_EMG); 
 end
 
-%% Detect M wave after each artifact
+%% Detect the locations of the two highest peaks
 
-std_dev = std(DoubletGroup_quadDx{1,1});
-% 2. Set a threshold as a multiple of the standard deviation
-minPeakHeight_multiplier = 5; % You can adjust this multiplier, I kept it quite 
-                          % high because the stimulation artefacts are much 
-                          % higher than the rest of the signal
-minPeakHeight = minPeakHeight_multiplier * std_dev;
-meanPeakDistance=15; 
-% find peaks in each group 
-% take 2 biggest peaks
-% extract data following 2 peaks 
+artfactsLocs_quadDx=compute2HighestPeaks(peakValuesGrouped_quadDx, peakLocsLocalGroup_quadDx);
+artfactsLocs_hamsDx=compute2HighestPeaks(peakValuesGrouped_hamsDx, peakLocsLocalGroup_hamsDx);
+artfactsLocs_gastDx=compute2HighestPeaks(peakValuesGrouped_gastDx, peakLocsLocalGroup_gastDx);
+artfactsLocs_taDx=compute2HighestPeaks(peakValuesGrouped_taDx, peakLocsLocalGroup_taDx);
 
-[pk1,locs1] = findpeaks(DoubletGroup_quadDx{1,1}(:,1),"MinPeakDistance", ...
-    meanPeakDistance,"MinPeakHeight",minPeakHeight(1));
-% --> finish here
-
-%% Compare amplitudes of 1st and 2nd M waves
+artfactsLocs_quadSx=compute2HighestPeaks(peakValuesGrouped_quadSx, peakLocsLocalGroup_quadSx);
+artfactsLocs_hamsSx=compute2HighestPeaks(peakValuesGrouped_hamsSx, peakLocsLocalGroup_hamsSx);
+artfactsLocs_gastSx=compute2HighestPeaks(peakValuesGrouped_gastSx, peakLocsLocalGroup_gastSx);
+artfactsLocs_taSx=compute2HighestPeaks(peakValuesGrouped_taSx, peakLocsLocalGroup_taSx);
 
 
+%% Detect the M wave after each artifact and compute the PAD 
+
+[PAD_quadDx,A1_quadDx, A2_quadDx] = computePAD(DoubletGroup_quadDx, artfactsLocs_quadDx, "Quad DX"); 
+[PAD_hamsDx,A1_hamsDx, A2_hamsDx] = computePAD(DoubletGroup_hamsDx, artfactsLocs_hamsDx, "Hams DX");
+[PAD_gastDx,A1_gastDx, A2_gastDx] = computePAD(DoubletGroup_gastDx, artfactsLocs_gastDx, "Gast DX");
+[PAD_taDx,A1_taDx, A2_taDx] = computePAD(DoubletGroup_taDx, artfactsLocs_taDx, "TA DX");
+
+[PAD_quadSx,A1_quadSx, A2_quadSx] = computePAD(DoubletGroup_quadSx, artfactsLocs_quadSx, "Quad SX"); 
+[PAD_hamsSx,A1_hamsSx, A2_hamsSx] = computePAD(DoubletGroup_hamsSx, artfactsLocs_hamsSx, "Hams SX");
+[PAD_gastSx,A1_gastSx, A2_gastSx] = computePAD(DoubletGroup_gastSx, artfactsLocs_gastSx, "Gast SX");
+[PAD_taSx,A1_taSx, A2_taSx] = computePAD(DoubletGroup_taSx, artfactsLocs_taSx, "TA DX");
+
+%% Print PAD for each muscle
+% Find the maximum length among the arrays
+max_length = max([length(PAD_gastDx), length(PAD_gastSx), length(PAD_hamsDx), ...
+    length(PAD_hamsSx), length(PAD_quadDx), length(PAD_quadSx), length(PAD_taSx), ...
+    length(PAD_taDx)]);
+
+% Pad arrays with NaN to make them have the same length
+PAD_gastDx(end+1:max_length) = NaN;
+PAD_gastSx(end+1:max_length) = NaN;
+PAD_hamsDx(end+1:max_length) = NaN;
+PAD_hamsSx(end+1:max_length) = NaN;
+PAD_quadSx(end+1:max_length) = NaN;
+PAD_quadDx(end+1:max_length) = NaN;
+PAD_taSx(end+1:max_length) = NaN;
+PAD_taDx(end+1:max_length) = NaN;
+
+% Create a table
+T = table(PAD_quadDx',PAD_hamsDx', PAD_gastDx',PAD_taDx', ...
+    PAD_quadSx', PAD_hamsSx',PAD_gastSx', PAD_taSx', ...
+    'VariableNames', {'PAD_quadDx','PAD_hamsDx', 'PAD_gastDx','PAD_taDx', ...
+    'PAD_quadSx', 'PAD_hamsSx','PAD_gastSx', 'PAD_taSx',});
+
+% Display the table
+disp(T);
 %% ************************************************************************
 % ************************ FUNCTIONS **************************************
 % *************************************************************************
 
- function [doubletsGroup, peakGroup] = buildDoubletsGroups(signal, peaks)
+ function [doubletsGroup, peakLocsGroup, peakValuesGrouped, peakLocsLocalGroup] = buildDoubletsGroups(signal, peaks)
   % Function to find the peaks near to each other and to construct the
   % groups for each doublet application 
-    max_distance_between_peaks = 1000; % define peak groups
+    max_distance_between_peaks = 200; % define peak groups
    
-    peakGroup = cell(0); % Initialize variables to store the groups
+    peakLocsGroup = cell(0); % Initialize variables to store the groups
+    peakLocsLocalGroup=cell(0); % save positions of peaks respective of the local wave
+    peakValuesGrouped=cell(0); 
     current_group = [];
     
     % Iterate through the peak locations
@@ -218,20 +257,28 @@ meanPeakDistance=15;
             % If the distance is larger, finalize the current group and start a new one
             if ~isempty(current_group)
                 current_group = [current_group, peaks(i)]; % Add the last peak to the group
-                peakGroup{end+1} = current_group; % Save the current group
+                for j=1:length(current_group)
+                    peakValues=signal(current_group); 
+                end 
+                peakLocsGroup{end+1} = current_group; % Save the current group
+                peakValuesGrouped{end+1}=peakValues;
                 current_group = []; % Reset for the next group
             else % is the current group is empty
-                peakGroup{end+1} = peaks(i);
+                peakLocsGroup{end+1} = peaks(i);
+                peakValuesGrouped{end+1} = signal(peaks(i));
             end
         end
     end
     
-    peak_groups_size=size(peakGroup); 
+    peak_groups_size=size(peakLocsGroup); 
     groups_number=peak_groups_size(2); 
     doubletsGroup=cell(1,groups_number);
     for i=1:groups_number
-        doubletsGroup{i}= signal((peakGroup{1,1}(1)-10):(peakGroup{1,1}(end)+100));
+        doubletsGroup{i}= signal((peakLocsGroup{i}(1)-10):(peakLocsGroup{i}(end)+100));
     end 
+    for i = 1:size(peakLocsGroup,2)
+         peakLocsLocalGroup{i}=peakLocsGroup{i}-peakLocsGroup{i}(1)+10; 
+    end
  end
 
  function plotDoubleWave(titleStr, DoubletGroup, Frequency)
@@ -249,14 +296,125 @@ meanPeakDistance=15;
         grid on;
         ylabel('mV');
         xlabel('time[ms]');
-        
         % Add a red horizontal line at y = 0.05
         hold on;
         yline(0.05, 'r', 'LineWidth', 1.5);
-
-        % Set y-axis limits to maximum + 0.1
-        %ylim([min(MwaveArray(i,:)-0.1) max(MwaveArray(i,:))+0.1]) % y limit scaled to the graph values
-
         hold off;
     end
  end 
+
+
+ function Mwavestart = findMwaveStart(signal, locs)
+    Mwavestart = zeros(1,2);
+    
+    for i = 1:length(locs)
+        count_zeroes = 0;
+        next_th = length(signal) - locs(i);
+        
+        for j = 1:next_th % Find zero-crossings in the samples before the next artifact
+            if (signal(locs(i) + j) * signal(locs(i) + j + 1)) < 0
+                count_zeroes = count_zeroes + 1;
+            end
+            
+            if count_zeroes == 2
+                count_zeroes = 0;
+                Mwavestart(i) = locs(i) + j;
+                % Check steepness after the identified start
+                steepness_after_start = calculateSteepness(signal, Mwavestart(i));
+                % Check steepness after the peak
+                steepness_after_peak = calculateSteepness(signal, locs(i) + 1);
+                % If steepness is similar, move the start 10 steps forward
+                if abs(steepness_after_start - steepness_after_peak) < 1
+                    Mwavestart(i) = Mwavestart(i) + 5;
+                end
+               
+                break; % exit the loop once M wave start is found
+            end
+        end
+    end
+ end
+
+ function steepness = calculateSteepness(signal, index)
+    % Calculate the steepness (slope) at the specified index
+    steepness = (signal(index + 1) - signal(index)) / 1; % Assuming a unit step
+ end
+
+
+ function artefactsLocs = compute2HighestPeaks(peakValuesGrouped, peakLocsLocalGroup)
+    artefactsLocs=cell(0);
+        for i=1:size(peakValuesGrouped,2)
+            if size(peakValuesGrouped{i},1) > 1
+                % Find the two highest peaks and their locations
+                [~, sortedIndices] = maxk(peakValuesGrouped{i}, 2);
+                sortedIndices = sort(sortedIndices, 'ascend'); 
+                artefactsLocs{i}=peakLocsLocalGroup{i}(sortedIndices); 
+            end 
+        end 
+        %artefactsLocs{i}(:)= artefactsLocs{i}(:)+1;
+ end
+%%
+function [PAD, A1, A2] = computePAD(signal, artefactLocs, titleStr)
+    M1 = [];
+    M2 = [];
+    Mlength = 30;
+    figure(); 
+    
+    if size(artefactLocs,2)==0
+        PAD=0; 
+        A1=0;
+        A2=0;
+        plot(signal{1}); 
+        text(mean(xlim), mean(ylim), sprintf(['No Double Stimulation detected \n in ' ...
+            'any of the stimulation sequences for this muscle']), ...
+             'Horiz','center', 'Vert','middle','FontSize', 16, 'BackgroundColor','w')
+        title(titleStr);
+        return;
+    end 
+    
+    for i = 1:size(signal, 2)
+        if isempty(artefactLocs{i})
+            subplot(3, 4, i);
+            plot(signal{i}(:, 1));
+            title(titleStr);
+            text(mean(xlim), mean(ylim), sprintf('No Double \n Stimulation \n detected', i), ...
+                'Horiz','center', 'Vert','middle','FontSize', 12, 'BackgroundColor','w')
+
+            grid on;
+            continue; % Skip the rest of the loop for this iteration
+        end
+        
+        startM_hamsSx(1:2) = findMwaveStart(signal{i}, artefactLocs{i});
+        M1 = signal{i}(startM_hamsSx(1):startM_hamsSx(1) + Mlength, 1);
+        M2 = signal{i}(startM_hamsSx(2):startM_hamsSx(2) + Mlength, 1);
+        
+        subplot(3, 4, i), plot(signal{i}(:, 1)), hold on, 
+        plot(artefactLocs{i}, signal{i}(artefactLocs{i}(:)), 'o'), 
+        ylabel('mV'), title(titleStr);
+        plot(startM_hamsSx(1):startM_hamsSx(1) + Mlength, M1, 'Color', 'r');
+        plot(startM_hamsSx(2):startM_hamsSx(2) + Mlength, M2, 'Color', 'r'); 
+        grid on
+
+        t = startM_hamsSx(1):startM_hamsSx(1) + Mlength;
+        t2 = startM_hamsSx(2):startM_hamsSx(2) + Mlength;
+
+        [upper_env_M1, lower_env_M1] = envelope(M1);
+
+        hold on;
+        plot(t, upper_env_M1, 'b--', 'LineWidth', 1.2);
+        plot(t, lower_env_M1, 'b--', 'LineWidth', 1.2);
+        grid on; 
+
+        A1(i) = mean(upper_env_M1 - lower_env_M1); 
+
+        [upper_env_M2, lower_env_M2] = envelope(M2);
+
+        plot(t2, upper_env_M2, 'b--', 'LineWidth', 1.2);
+        plot(t2, lower_env_M2, 'b--', 'LineWidth', 1.2);
+        grid on;
+        hold off;
+
+        A2(i) = mean(upper_env_M2 - lower_env_M2); 
+
+        PAD(i) = (A2(i) / A1(i)) * 100; 
+    end 
+end
