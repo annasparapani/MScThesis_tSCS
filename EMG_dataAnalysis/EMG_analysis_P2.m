@@ -75,7 +75,7 @@ end
 %% Signal processing
 % Filtering
 fcutlow=10;   
-fcuthigh=350;   
+fcuthigh=450;   
 [z,p,k]=butter(4,[fcutlow,fcuthigh]/(Fs_EMG/2),'bandpass');
 [sos,g]=zp2sos(z,p,k); %apply filter to signal
 x_filt(:,:) = filtfilt(sos,g,x(:,:));
@@ -108,7 +108,7 @@ minPeakHeight_multiplier = 5; % You can adjust this multiplier, I kept it quite
                           % high because the stimulation artefacts are much 
                           % higher than the rest of the signal
 minPeakHeight = minPeakHeight_multiplier * std_dev;
-meanPeakDistance=15; % mean peak distance 1200 = 0.6s 
+meanPeakDistance=10; % mean peak distance 1200 = 0.6s 
 
 % Right leg
 [pk1,locs1] = findpeaks(xfilter(:,1),"MinPeakDistance",meanPeakDistance,"MinPeakHeight",minPeakHeight(1,1));
@@ -186,16 +186,15 @@ end
 
 %% Detect the locations of the two highest peaks
 
-artfactsLocs_quadDx=compute2HighestPeaks(peakValuesGrouped_quadDx, peakLocsLocalGroup_quadDx);
-artfactsLocs_hamsDx=compute2HighestPeaks(peakValuesGrouped_hamsDx, peakLocsLocalGroup_hamsDx);
-artfactsLocs_gastDx=compute2HighestPeaks(peakValuesGrouped_gastDx, peakLocsLocalGroup_gastDx);
-artfactsLocs_taDx=compute2HighestPeaks(peakValuesGrouped_taDx, peakLocsLocalGroup_taDx);
+artfactsLocs_quadDx=computeArtefactsPositions(peakValuesGrouped_quadDx, peakLocsLocalGroup_quadDx);
+artfactsLocs_hamsDx=computeArtefactsPositions(peakValuesGrouped_hamsDx, peakLocsLocalGroup_hamsDx);
+artfactsLocs_gastDx=computeArtefactsPositions(peakValuesGrouped_gastDx, peakLocsLocalGroup_gastDx);
+artfactsLocs_taDx=computeArtefactsPositions(peakValuesGrouped_taDx, peakLocsLocalGroup_taDx);
 
-artfactsLocs_quadSx=compute2HighestPeaks(peakValuesGrouped_quadSx, peakLocsLocalGroup_quadSx);
-artfactsLocs_hamsSx=compute2HighestPeaks(peakValuesGrouped_hamsSx, peakLocsLocalGroup_hamsSx);
-artfactsLocs_gastSx=compute2HighestPeaks(peakValuesGrouped_gastSx, peakLocsLocalGroup_gastSx);
-artfactsLocs_taSx=compute2HighestPeaks(peakValuesGrouped_taSx, peakLocsLocalGroup_taSx);
-
+artfactsLocs_quadSx=computeArtefactsPositions(peakValuesGrouped_quadSx, peakLocsLocalGroup_quadSx);
+artfactsLocs_hamsSx=computeArtefactsPositions(peakValuesGrouped_hamsSx, peakLocsLocalGroup_hamsSx);
+artfactsLocs_gastSx=computeArtefactsPositions(peakValuesGrouped_gastSx, peakLocsLocalGroup_gastSx);
+artfactsLocs_taSx=computeArtefactsPositions(peakValuesGrouped_taSx, peakLocsLocalGroup_taSx);
 
 %% Detect the M wave after each artifact and compute the PAD 
 
@@ -303,35 +302,18 @@ disp(T);
     end
  end 
 
-
  function Mwavestart = findMwaveStart(signal, locs)
     Mwavestart = zeros(1,2);
-    
-    for i = 1:length(locs)
-        count_zeroes = 0;
-        next_th = length(signal) - locs(i);
-        
-        for j = 1:next_th % Find zero-crossings in the samples before the next artifact
-            if (signal(locs(i) + j) * signal(locs(i) + j + 1)) < 0
-                count_zeroes = count_zeroes + 1;
-            end
-            
-            if count_zeroes == 2
-                count_zeroes = 0;
-                Mwavestart(i) = locs(i) + j;
-                % Check steepness after the identified start
-                steepness_after_start = calculateSteepness(signal, Mwavestart(i));
-                % Check steepness after the peak
-                steepness_after_peak = calculateSteepness(signal, locs(i) + 1);
-                % If steepness is similar, move the start 10 steps forward
-                if abs(steepness_after_start - steepness_after_peak) < 1
-                    Mwavestart(i) = Mwavestart(i) + 5;
-                end
-               
-                break; % exit the loop once M wave start is found
-            end
-        end
-    end
+    Mwavestart(1) = locs(1) + 5;
+    Mwavestart(2)=locs(2) + 5;
+    % for i = 1:length(locs)
+    %     for j = 1:10 % Find zero-crossings in the 40 samples before the artifact
+    %         if (signal(locs(i) - j) * signal(locs(i) - j + 1)) < 0
+    %             Mwavestart(i) = locs(i) - j - 5; % add 5 samples to give some space in the graph
+    %             break;
+    %         end
+    %     end
+    % end
  end
 
  function steepness = calculateSteepness(signal, index)
@@ -340,23 +322,28 @@ disp(T);
  end
 
 
- function artefactsLocs = compute2HighestPeaks(peakValuesGrouped, peakLocsLocalGroup)
+ function artefactsLocs = computeArtefactsPositions(peakValuesGrouped, peakLocsLocalGroup)
     artefactsLocs=cell(0);
-        for i=1:size(peakValuesGrouped,2)
-            if size(peakValuesGrouped{i},1) > 1
-                % Find the two highest peaks and their locations
-                [~, sortedIndices] = maxk(peakValuesGrouped{i}, 2);
-                sortedIndices = sort(sortedIndices, 'ascend'); 
-                artefactsLocs{i}=peakLocsLocalGroup{i}(sortedIndices); 
-            end 
+        
+    for i=1:size(peakValuesGrouped,2)
+        artefactsLocs{i}(1)=peakLocsLocalGroup{i}(1); 
+        if size(peakLocsLocalGroup,2)>1
+            artefactsLocs{i}(2)=peakLocsLocalGroup{i}(1)+51; % approssimato!
+                % if size(peakValuesGrouped{i},1) > 1
+                %     % Find the two highest peaks and their locations
+                %     [~, sortedIndices] = maxk(peakValuesGrouped{i}, 2);
+                %     sortedIndices = sort(sortedIndices, 'ascend'); 
+                %     artefactsLocs{i}=peakLocsLocalGroup{i}(sortedIndices); 
+                % end 
         end 
-        %artefactsLocs{i}(:)= artefactsLocs{i}(:)+1;
+    end
  end
 %%
 function [PAD, A1, A2] = computePAD(signal, artefactLocs, titleStr)
+    Frequency=1024; 
     M1 = [];
     M2 = [];
-    Mlength = 30;
+    Mlength = 20;
     figure(); 
     
     if size(artefactLocs,2)==0
@@ -371,50 +358,40 @@ function [PAD, A1, A2] = computePAD(signal, artefactLocs, titleStr)
         return;
     end 
     
-    for i = 1:size(signal, 2)
-        if isempty(artefactLocs{i})
+    for i = 1:size(artefactLocs, 2)
+        if isempty(artefactLocs{i}) || all(size(artefactLocs{i}) == [1, 1])
             subplot(3, 4, i);
-            plot(signal{i}(:, 1));
+            timeArray= (0:1/Frequency:length(signal{i}(:,1))/Frequency-1/Frequency)*1000; %ms
+            plot(timeArray, signal{i}(:, 1));
             title(titleStr);
             text(mean(xlim), mean(ylim), sprintf('No Double \n Stimulation \n detected', i), ...
                 'Horiz','center', 'Vert','middle','FontSize', 12, 'BackgroundColor','w')
-
             grid on;
             continue; % Skip the rest of the loop for this iteration
         end
         
-        startM_hamsSx(1:2) = findMwaveStart(signal{i}, artefactLocs{i});
-        M1 = signal{i}(startM_hamsSx(1):startM_hamsSx(1) + Mlength, 1);
-        M2 = signal{i}(startM_hamsSx(2):startM_hamsSx(2) + Mlength, 1);
+        startM(1:2,1) = findMwaveStart(signal{i}, artefactLocs{i});
+        
+        if startM(1,1)==0 
+            startM(1,1)=1; 
+        end 
+
+        if startM(2,1)==0 
+            startM(2,1)=1; 
+        end 
+
+        M1 = signal{i}(startM(1):startM(1) + Mlength, 1);
+        M2 = signal{i}(startM(2):startM(2) + Mlength, 1);
+
+        A1(i) = max(M1)-min(M1);
+        A2(i) = max(M2)-min(M2); 
+        PAD(i) = (A2/A1)*100; 
         
         subplot(3, 4, i), plot(signal{i}(:, 1)), hold on, 
         plot(artefactLocs{i}, signal{i}(artefactLocs{i}(:)), 'o'), 
         ylabel('mV'), title(titleStr);
-        plot(startM_hamsSx(1):startM_hamsSx(1) + Mlength, M1, 'Color', 'r');
-        plot(startM_hamsSx(2):startM_hamsSx(2) + Mlength, M2, 'Color', 'r'); 
+        plot(startM(1):startM(1) + Mlength, M1, 'Color', 'r');
+        plot(startM(2):startM(2) + Mlength, M2, 'Color', 'r'); 
         grid on
-
-        t = startM_hamsSx(1):startM_hamsSx(1) + Mlength;
-        t2 = startM_hamsSx(2):startM_hamsSx(2) + Mlength;
-
-        [upper_env_M1, lower_env_M1] = envelope(M1);
-
-        hold on;
-        plot(t, upper_env_M1, 'b--', 'LineWidth', 1.2);
-        plot(t, lower_env_M1, 'b--', 'LineWidth', 1.2);
-        grid on; 
-
-        A1(i) = mean(upper_env_M1 - lower_env_M1); 
-
-        [upper_env_M2, lower_env_M2] = envelope(M2);
-
-        plot(t2, upper_env_M2, 'b--', 'LineWidth', 1.2);
-        plot(t2, lower_env_M2, 'b--', 'LineWidth', 1.2);
-        grid on;
-        hold off;
-
-        A2(i) = mean(upper_env_M2 - lower_env_M2); 
-
-        PAD(i) = (A2(i) / A1(i)) * 100; 
     end 
 end

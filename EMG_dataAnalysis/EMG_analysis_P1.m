@@ -6,6 +6,7 @@
 % analysis is the identification of the PRM reflex, which is observed
 % around 50micros after the stimulation artefact on the EMG baseline. 
 
+
 clear all 
 close all
 clc
@@ -99,7 +100,7 @@ if plots_on
     subplot(4,1,3), plot(time,xfilter(:,7)), ylabel('mV'), xlabel('s'), grid off, title('SX Gast'); %23
     subplot(4,1,4), plot(time,xfilter(:,8)), ylabel('mV'),xlabel('s'), grid off, title('SX TA'); %24
 end
-%% Peaks detection
+%% Peaks detection (M waves peaks) 
 % Finding the Min Peak Height for every muscle, based on the std deviation
 % 1. Calculate standard deviation of the filtered signal
 std_dev = std(xfilter);
@@ -148,48 +149,112 @@ if plots_on
     subplot(4,1,3), plot(gast_sx), hold on, plot (locs7,pk7,'o'), ylabel('mV'), title(' SX Gast');
     subplot(4,1,4), plot(ta_sx), hold on, plot (locs8,pk8,'o'), ylabel('mV'), title(' SX TA');
 end
+
 %% M Waves detection based on zero crossing
-% the function sets as start of the Mwave when the signal crosses the
-% zero axis for the 2nd time after the peak
+% looks for the first zero crosssing before the peak 
 %Right leg
-Mwavestart_quadDx=findMwaveStart(quad_dx,locs1);
-Mwavestart_hamDx=findMwaveStart(hams_dx,locs2);
-Mwavestart_gastDx=findMwaveStart(gast_dx,locs3);
-Mwavestart_taDx = findMwaveStart(ta_dx, locs4); 
+Mwavestart1=findMwaveStart(quad_dx,locs1);
+Mwavestart2=findMwaveStart(hams_dx,locs2);
+Mwavestart3=findMwaveStart(gast_dx,locs3);
+Mwavestart4 = findMwaveStart(ta_dx, locs4); 
 % Left leg 
-Mwavestart_quadSx=findMwaveStart(quad_sx,locs5);
-Mwavestart_hamSx=findMwaveStart(hams_sx,locs6);
-Mwavestart_gastSx=findMwaveStart(gast_sx,locs7);
-Mwavestart_taSx = findMwaveStart(ta_sx, locs8); 
+Mwavestart5=findMwaveStart(quad_sx,locs5);
+Mwavestart6=findMwaveStart(hams_sx,locs6);
+Mwavestart7=findMwaveStart(gast_sx,locs7);
+Mwavestart8 = findMwaveStart(ta_sx, locs8); 
 
 %% M waves detection and plot
 
 duration_quad = 100; % ~100 ms
-duration_hams = 100; %Federico usava 52 (50ms) 15ms di latenza + 35ms di Mwave (1024Hz*50ms=57samples)
+duration_hams = 100; % Federico usava 52 (50ms) 15ms di latenza + 35ms di Mwave (1024Hz*50ms=57samples)
 
-% Right Leg M-wave
-Mwaves1=buildMwave(Mwavestart_quadDx, duration_quad, quad_dx); 
-Mwaves2=buildMwave(Mwavestart_hamDx, duration_hams, hams_dx); 
-Mwaves3=buildMwave(Mwavestart_gastDx, duration_quad, gast_dx);
-Mwaves4=buildMwave(Mwavestart_taDx, duration_hams, ta_dx);
-
-%Left Leg M-wave
-Mwaves5=buildMwave(Mwavestart_quadSx, duration_quad, quad_sx); % +10 perchè M5 aveva degli artefatti dopo il 2nd zero crossing
-Mwaves6=buildMwave(Mwavestart_hamSx, duration_hams, hams_sx); 
-Mwaves7=buildMwave(Mwavestart_gastSx, duration_quad, gast_sx);
-Mwaves8=buildMwave(Mwavestart_taSx, duration_hams, ta_sx);
+Mwaves1=buildMwave(Mwavestart1, duration_quad, quad_dx); 
+Mwaves2=buildMwave(Mwavestart2, duration_hams, hams_dx); 
+Mwaves3=buildMwave(Mwavestart3, duration_quad, gast_dx);
+Mwaves4=buildMwave(Mwavestart4, duration_hams, ta_dx);
+Mwaves5=buildMwave(Mwavestart5, duration_quad, quad_sx);
+Mwaves6=buildMwave(Mwavestart6, duration_hams, hams_sx); 
+Mwaves7=buildMwave(Mwavestart7, duration_quad, gast_sx);
+Mwaves8=buildMwave(Mwavestart8, duration_hams, ta_sx);
 
 % M-WAVES GRAPHS
 if plots_on
-    plotMwave("M wave Quad DX", Mwaves1, Fs_EMG);
-    plotMwave("M wave Hams DX", Mwaves2, Fs_EMG);
-    plotMwave("M wave Gast DX", Mwaves3, Fs_EMG);
-    plotMwave("M wave TA DX", Mwaves4, Fs_EMG);
-    plotMwave("M wave Quad SX", Mwaves5, Fs_EMG);
-    plotMwave("M wave Hams SX", Mwaves6, Fs_EMG);
-    plotMwave("M wave Gast SX", Mwaves7, Fs_EMG);
-    plotMwave("M wave TA SX", Mwaves8, Fs_EMG);
+    plotMwave("M wave Quad DX", Mwaves1, Fs_EMG, 0,0);
+    plotMwave("M wave Hams DX", Mwaves2, Fs_EMG, 0,0);
+    plotMwave("M wave Gast DX", Mwaves3, Fs_EMG, 0,0);
+    plotMwave("M wave TA DX", Mwaves4, Fs_EMG, 0,0);
+    plotMwave("M wave Quad SX", Mwaves5, Fs_EMG, 0,0);
+    plotMwave("M wave Hams SX", Mwaves6, Fs_EMG, 0,0);
+    plotMwave("M wave Gast SX", Mwaves7, Fs_EMG, 0,0);
+    plotMwave("M wave TA SX", Mwaves8, Fs_EMG, 0,0);
 end
+
+%% Artefact detection 
+% the artefact is a small peak before the M wave - it's observed only in the
+% proximal muscles (quad and hams), but the hams usually have a better
+% signal. So we do the artifact detection on the hamstrings for each peak
+% identified and then translate the identified locs on all muscles. 
+art_locs=[]; 
+art_pks=[];
+for i = 1:length(locs6)
+   meanPeakDistance = 10; 
+   minPeakHeight = 0.02; 
+
+  [art_pk,art_loc] = findpeaks(hams_sx(locs6(i)-15:locs6(i)), ...
+      "MinPeakDistance",meanPeakDistance,"MinPeakHeight",minPeakHeight);
+  art_locs(i) = locs6(i)-15+art_loc; 
+  art_pks(i) = art_pk; 
+end 
+if plots_on
+    figure()
+    plot(hams_sx), hold on, plot(art_locs, art_pks, 'o', 'Color','g')
+    title('Artefacts identified on Hams Sx')
+end 
+
+%% Compute latency for all waves
+% the function computes the latency between the positions of the artefacts
+% identified on the hamstings in the previous section and the Mwaves of
+% each muscle.
+
+[meanLatency_quadDx, Latency_quadDx] = computeLatency(art_locs, locs1); 
+[meanLatency_hamsDx, Latency_hamsDx] = computeLatency(art_locs, locs2); 
+[meanLatency_gastDx, Latency_gastDx] = computeLatency(art_locs, locs3); 
+[meanLatency_taDx, Latency_taDx] = computeLatency(art_locs, locs4); 
+[meanLatency_quadSx, Latency_quadSx] = computeLatency(art_locs, locs5); 
+[meanLatency_hamsSx, Latency_hamsSx] = computeLatency(art_locs, locs6); 
+[meanLatency_gastSx, Latency_gastSx] = computeLatency(art_locs, locs7); 
+[meanLatency_taSx, Latency_taSx] = computeLatency(art_locs, locs8); 
+
+% Create a table
+MeanLatency = table(meanLatency_quadDx',meanLatency_hamsDx', meanLatency_gastDx', ...
+    meanLatency_taDx', meanLatency_quadSx', meanLatency_hamsSx', ...
+    meanLatency_gastSx', meanLatency_taSx', 'VariableNames', ...
+    {'quadDx (ms)', 'hamsDx (ms)', 'gastDx (ms)','taDx (ms)','quadSx(ms)', ...
+    'hamsSx (ms)','gastSx (ms)', 'taSx (ms)',});
+
+% Display the table
+disp(MeanLatency);
+%%
+
+Mwaves5_art=buildMwave(locs5-meanLatency_hamsSx-5, 50, hams_sx); 
+plotMwave("M wave Hams SX", Mwaves5_art, Fs_EMG, meanLatency_hamsSx, 1);
+
+% Mwaves1_art=buildMwave(locs1-meanLatency_hamsSx-5, 50, quad_dx); 
+% plotMwave("M wave Quad DX", Mwaves1_art, Fs_EMG, meanLatency_quadDx, 1);
+
+Mwaves8_art=buildMwave(locs8-meanLatency_taSx-5,50,ta_sx); 
+plotMwave("M wave Ta SX", Mwaves8_art, Fs_EMG, meanLatency_taSx, 1);
+
+%% Envelope of M Wave --> not used at the moment 
+% PRM_A_quadDx = EnvelopeMWave(Mwaves1, Fs_EMG, "Quad DX");
+% PRM_A_hamsDx = EnvelopeMWave(Mwaves2, Fs_EMG, "Hams DX");
+% PRM_A_gastDx = EnvelopeMWave(Mwaves3, Fs_EMG, "Gast DX");
+% PRM_A_taDx = EnvelopeMWave(Mwaves4, Fs_EMG, "TA DX");
+% 
+% PRM_A_quadSx = EnvelopeMWave(Mwaves5, Fs_EMG, "Quad SX");
+% PRM_A_hamsSx = EnvelopeMWave(Mwaves6, Fs_EMG, "Hams SX");
+% PRM_A_gastSx = EnvelopeMWave(Mwaves7, Fs_EMG, "Gast SX");
+% PRM_A_taSx = EnvelopeMWave(Mwaves8, Fs_EMG, "TA SX");
 
 %% Detection of M waves above threshold
 % studio del riflesso PRM a valle del protocollo 1 e 2 che indichi il 
@@ -199,14 +264,14 @@ end
 s=struct('W1',Mwaves1,'W2',Mwaves2,'W3',Mwaves3(:,10:end),'W4',Mwaves4,'W5', ...
     Mwaves5,'W6',Mwaves6,'W7',Mwaves7,'W8',Mwaves8);
 
-[peaksM1, locsM1]=findMwavePeak(s.W1, 0.005, 50); 
-[peaksM2, locsM2]=findMwavePeak(s.W2, 0.005, 50); 
-[peaksM3, locsM3]=findMwavePeak(s.W3, 0.005, 50); 
-[peaksM4, locsM4]=findMwavePeak(s.W4, 0.005, 50); 
-[peaksM5, locsM5]=findMwavePeak(s.W5, 0.005, 50); 
-[peaksM6, locsM6]=findMwavePeak(s.W6, 0.005, 50); 
-[peaksM7, locsM7]=findMwavePeak(s.W7, 0.005, 50); 
-[peaksM8, locsM8]=findMwavePeak(s.W8, 0.005, 50); 
+[peaksM1, locsM1]=findMwavePeak(s.W1, 0.05, 50); 
+[peaksM2, locsM2]=findMwavePeak(s.W2, 0.05, 50); 
+[peaksM3, locsM3]=findMwavePeak(s.W3, 0.05, 50); 
+[peaksM4, locsM4]=findMwavePeak(s.W4, 0.05, 50); 
+[peaksM5, locsM5]=findMwavePeak(s.W5, 0.05, 50); 
+[peaksM6, locsM6]=findMwavePeak(s.W6, 0.05, 50); 
+[peaksM7, locsM7]=findMwavePeak(s.W7, 0.05, 50); 
+[peaksM8, locsM8]=findMwavePeak(s.W8, 0.05, 50); 
 
 %%
 % maxima 
@@ -220,14 +285,14 @@ m5=min(s.W5,[],2); m6=min(s.W6,[],2); m7=min(s.W7,[],2); m8=min(s.W8,[],2);
 %indici
 n1=0; n2=0; n3=0; n4=0; n5=0; n6=0; n7=0; n8=0;
 
-n1 = ((sum((M1-m1) >= 0.05))/length(m1))*100;
-n2 = ((sum((M2-m2) >= 0.05))/length(m2))*100;
-n3 = ((sum((M3-m3) >= 0.05))/length(m3))*100;
-n4 = ((sum((M4-m4) >= 0.05))/length(m4))*100;
-n5 = ((sum((M5-m5) >= 0.05))/length(m5))*100;
-n6 = ((sum((M6-m6) >= 0.05))/length(m6))*100;
-n7 = ((sum((M7-m7) >= 0.05))/length(m7))*100;
-n8 = ((sum((M8-m8) >= 0.05))/length(m8))*100;
+n1 = ((sum((M1-m1) >= 0.5))/length(m1))*100;
+n2 = ((sum((M2-m2) >= 0.5))/length(m2))*100;
+n3 = ((sum((M3-m3) >= 0.5))/length(m3))*100;
+n4 = ((sum((M4-m4) >= 0.5))/length(m4))*100;
+n5 = ((sum((M5-m5) >= 0.5))/length(m5))*100;
+n6 = ((sum((M6-m6) >= 0.5))/length(m6))*100;
+n7 = ((sum((M7-m7) >= 0.5))/length(m7))*100;
+n8 = ((sum((M8-m8) >= 0.5))/length(m8))*100;
 
 
 formatSpec1="N° of Mwave above 50uV is %4.2f/100 for Quad Dx\n";
@@ -252,7 +317,7 @@ fprintf(formatSpec8,n8);
 % ************************ FUNCTIONS **************************************
 % *************************************************************************
 
-function plotMwave(titleStr, MwaveArray, Frequency)
+function plotMwave(titleStr, MwaveArray, Frequency, meanLatency, latencyFlag)
     % Function to plot the M wave
     timeArray= (0:1/Frequency:length(MwaveArray)/Frequency-1/Frequency)*1000; %ms
     figure;
@@ -270,16 +335,21 @@ function plotMwave(titleStr, MwaveArray, Frequency)
         
         % Calculate the average value
         avg_value = mean(MwaveArray(i,:));
-        % Plot a band around the average value (±0.025)
+        % Plot a band around the average value (±0.25)
         hold on;
-        fill([timeArray, fliplr(timeArray)], [ones(size(timeArray))*(avg_value + 0.025), fliplr(ones(size(timeArray))*(avg_value - 0.025))], 'y', 'EdgeColor', 'none', 'FaceAlpha', 0.3);
-        
-        % Add a red horizontal line at y = 0.05
-        hold on;
-        yline(0.05, 'r', 'LineWidth', 1.5);
+
+        fill([timeArray, fliplr(timeArray)], [ones(size(timeArray))*(avg_value + 0.25), fliplr(ones(size(timeArray))*(avg_value - 0.25))], 'y', 'EdgeColor', 'none', 'FaceAlpha', 0.3);
 
         % Set y-axis limits to maximum + 0.1
         ylim([min(MwaveArray(i,:)-0.1) max(MwaveArray(i,:))+0.1]) % y limit scaled to the graph values
+        
+        if latencyFlag
+            xline(10, 'r', 'LineWidth', 2);
+            yValue = -0.3;
+            line([10, 10 + meanLatency], [yValue, yValue], 'Color', 'b', 'LineWidth', 2);
+            text(10 + meanLatency/2, yValue - 0.1, ['Latency ' num2str(meanLatency)], 'HorizontalAlignment', 'center');
+
+        end 
 
         hold off;
     end
@@ -287,37 +357,14 @@ end
 
 function Mwavestart = findMwaveStart(signal, locs)
     Mwavestart = zeros(size(locs));
-    
     for i = 1:length(locs)
-        count_zeroes = 0;
-        
-        if i < length(locs)
-            next_th = locs(i + 1) - locs(i);
-        else
-            next_th = length(signal) - locs(i);
-        end
-        
-        for j = 1:next_th % Find zero-crossings in the 40 samples after the artifact
-            if (signal(locs(i) + j) * signal(locs(i) + j + 1)) < 0
-                count_zeroes = count_zeroes + 1;
-            end
-            
-            if count_zeroes == 2
-                count_zeroes = 0;
-                Mwavestart(i) = locs(i) + j;
-                % Check steepness after the identified start
-                steepness_after_start = calculateSteepness(signal, Mwavestart(i));
-                % Check steepness after the peak
-                steepness_after_peak = calculateSteepness(signal, locs(i) + 1);
-                % If steepness is similar, move the start 10 steps forward
-                if abs(steepness_after_start - steepness_after_peak) < 2.5
-                    Mwavestart(i) = Mwavestart(i) + 10;
-                end
-                
-                break; % exit the loop once M wave start is found
+        for j = 1:100 % Find zero-crossings in the 100 samples before the artifact
+            if (signal(locs(i) - j) * signal(locs(i) - j + 1)) < 0
+                Mwavestart(i) = locs(i) - j - 5; % add 5 samples to give some space in the graph
+                break;
             end
         end
-    end
+     end
 end
 
 function steepness = calculateSteepness(signal, index)
@@ -367,4 +414,48 @@ function [peaks, locs] = findMwavePeak(signal, MinPeakHeight, MinPeakDistance)
         plot (locs, peaks, 'o'), ylabel('mV');
         hold off;
     end
+end 
+
+function [A] = EnvelopeMWave(MWaveArray, Frequency, titleStr)
+
+    Frequency=1024;
+    timeArray= (0:1/Frequency:length(MWaveArray)/Frequency-1/Frequency)*1000; %ms
+    figure();
+    A=[];
+
+    for i = 1:size(MWaveArray,1)
+    
+        if (rem(size(MWaveArray),10))~=0
+                flag=1;
+        else flag=0;
+        end 
+        
+        subplot(fix(size(MWaveArray,1)/10)+flag, 10, i);
+        plot(timeArray, MWaveArray(i,:),'LineWidth',1.2, 'Color','b');
+        title(titleStr);
+        grid on;
+        ylabel('mV');
+        xlabel('time[ms]');
+        hold on
+        t = 1:length(MWaveArray);
+        [upper_env, lower_env] = envelope(MWaveArray(i,:));
+        plot(t, upper_env, 'r--', 'LineWidth', 1.2);
+        plot(t, lower_env, 'r--', 'LineWidth', 1.2);
+        
+        A(i) = mean(upper_env - lower_env);
+    end 
+end 
+
+function [mean_latency, latency_ms] = computeLatency(art_locs, locs)
+    if length(locs)>length(art_locs)
+       locs=locs(1:length(art_locs)); 
+    end
+
+    latency_samples=[];
+    latency_ms=[];
+    for i = 1:length(locs)
+        latency_samples(i) = locs(i)-art_locs(i); 
+        latency_ms(i) = (latency_samples(i)/1024)*1000; 
+    end 
+    mean_latency = mean(latency_ms); 
 end 
