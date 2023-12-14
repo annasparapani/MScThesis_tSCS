@@ -51,6 +51,9 @@ set(PROJECT_SOURCES
         stimulator.cpp
         stim_thread.cpp
         stim_thread.h
+        triangularstim.cpp
+        triangularstim.h
+        triangularstim.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

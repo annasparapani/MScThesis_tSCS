@@ -14,7 +14,8 @@ MainWindow::MainWindow(QWidget *parent)
    connect(ui->Button_2CloseStim, &QPushButton::clicked, this, &MainWindow::openProtocol2);
    connect(ui->Button_Ramp, &QPushButton::clicked, this, &MainWindow::openProtocol3);
    connect(ui->Button_ContinuousStim, &QPushButton::clicked, this, &MainWindow::openProtocol4);
- }
+   connect(ui->Button_triangularStim, &QPushButton::clicked, this, &MainWindow::openTriangStim);
+}
 
 MainWindow::~MainWindow()
 {
@@ -51,3 +52,9 @@ void MainWindow::openProtocol4(){
     myProtocol4->show();
 }
 
+void MainWindow::openTriangStim(){
+    this->hide();
+    static triangularStim *myTriangStim = new triangularStim(this);
+    myTriangStim->show();
+
+}

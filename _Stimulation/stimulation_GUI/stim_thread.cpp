@@ -243,6 +243,112 @@ void stim_Thread::run(){
                     clock_nanosleep ( CLOCK_MONOTONIC, TIMER_ABSTIME, &t_next, nullptr );
                 }
                 break;
+        case 5: // CODE TO RUN PROTOCOL 5 - triangular wave
+            cout<<"I'm running protocol 5"<<endl;
+            cout << "Current: "<< current <<"mA"<< endl;
+            cout << "StimT "<< stimT <<"ms"<< endl;
+            this->PW = this->waveLength*1000/15;
+            cout << "Pulse Width: "<< this->PW <<"micro s"<< endl;
+
+            loop_count = 1;
+
+            t_period.tv_sec = 0;
+            t_period.tv_nsec = DEFAULT_LOOP_TIME_NS; //1ms (define)
+
+            clock_gettime( CLOCK_MONOTONIC, &t_next);
+            clock_gettime( CLOCK_MONOTONIC, &t_start);
+
+            while(stimulating)
+            {
+                t_next = addition(t_next, t_period);
+
+                if(loop_count%stimT == 0) // repeats every stimT (every 20ms = 50Hz)
+                {
+                    cout << "Current: "<< current <<"mA"<< endl;
+                    cout << "StimT "<< stimT << "ms"<<endl;
+                    cout << "Pulse Width: "<< this->PW <<"micro s"<< endl;
+
+                    stimulator1.channels[0].packet_number = smpt_packet_number_generator_next(&stimulator1.device);
+
+                    // Sending 16 points to build the triangular wave
+                    stimulator1.channels[0].points[0].current = (current/8)*1;
+                    stimulator1.channels[0].points[0].time = PW;
+                    cout << "Current: "<< (current/8)*1 << endl;
+                    stimulator1.channels[0].points[1].current=(current/8)*2;
+                    stimulator1.channels[0].points[1].time = PW;
+                    cout << "Current: "<< (current/8)*2 << endl;
+                    stimulator1.channels[0].points[2].current=(current/8)*3;
+                    stimulator1.channels[0].points[2].time = PW;
+                    cout << "Current: "<< (current/8)*3 << endl;
+                    stimulator1.channels[0].points[3].current=(current/8)*4;
+                    stimulator1.channels[0].points[3].time = PW;
+                    cout << "Current: "<< (current/8)*4 << endl;
+                    stimulator1.channels[0].points[4].current=(current/8)*5;
+                    stimulator1.channels[0].points[4].time = PW;
+                    cout << "Current: "<< (current/8)*5 << endl;
+                    stimulator1.channels[0].points[5].current=(current/8)*6;
+                    stimulator1.channels[0].points[5].time = PW;
+                    cout << "Current: "<< (current/8)*6 << endl;
+                    stimulator1.channels[0].points[6].current=(current/8)*7;
+                    stimulator1.channels[0].points[6].time = PW;
+                    cout << "Current: "<< (current/8)*7 << endl;
+                    stimulator1.channels[0].points[7].current=(current/8)*8;
+                    stimulator1.channels[0].points[7].time = PW;
+                    cout << "Current: "<< (current/8)*8 << endl;
+                    stimulator1.channels[0].points[8].current=(current/8)*8;
+                    stimulator1.channels[0].points[8].time = PW;
+                    cout << "Current: "<< (current/8)*8 << endl;
+                    stimulator1.channels[0].points[9].current=(current/8)*7;
+                    stimulator1.channels[0].points[9].time = PW;
+                    cout << "Current: "<< (current/8)*7 << endl;
+                    stimulator1.channels[0].points[10].current=(current/8)*6;
+                    stimulator1.channels[0].points[10].time = PW;
+                    cout << "Current: "<< (current/8)*6 << endl;
+                    stimulator1.channels[0].points[11].current=(current/8)*5;
+                    stimulator1.channels[0].points[11].time = PW;
+                    cout << "Current: "<< (current/8)*5 << endl;
+                    stimulator1.channels[0].points[12].current=(current/8)*4;
+                    stimulator1.channels[0].points[12].time = PW;
+                    cout << "Current: "<< (current/8)*4 << endl;
+                    stimulator1.channels[0].points[13].current=(current/8)*3;
+                    stimulator1.channels[0].points[13].time = PW;
+                    cout << "Current: "<< (current/8)*3 << endl;
+                    stimulator1.channels[0].points[14].current=(current/8)*2;
+                    stimulator1.channels[0].points[14].time = PW;
+                    cout << "Current: "<< (current/8)*2 << endl;
+                    stimulator1.channels[0].points[15].current=(current/8)*1;
+                    stimulator1.channels[0].points[15].time = PW;
+                    cout << "Current: "<< (current/8)*1 << endl;
+                    cout << "---------------------------------------"<< endl;
+
+                    bool check_sent = smpt_send_ll_channel_config(&stimulator1.device, &stimulator1.channels[0]);
+                }
+                loop_count++;
+                clock_nanosleep ( CLOCK_MONOTONIC, TIMER_ABSTIME, &t_next, nullptr );
+               /* if(!wave_formed){
+
+                    stimulator1.channels[0].packet_number = smpt_packet_number_generator_next(&stimulator1.device);
+
+                    stimulator1.channels[0].points[0].current = current;
+                    stimulator1.channels[0].points[0].time = PW;
+
+                    cout << "Current: "<< current << endl;
+                    bool check_sent = smpt_send_ll_channel_config(&stimulator1.device, &stimulator1.channels[0]);
+
+                    current+=direction*current_increment;
+
+                    if(current>=current_maxContinuous||current<=0){
+                        direction *=-1;
+                    }
+
+                    if(current<=0)  wave_formed=1;
+                }
+                loop_count++;
+                clock_nanosleep ( CLOCK_MONOTONIC, TIMER_ABSTIME, &t_next, nullptr );
+            }*/
+            }
+            break;
+
        }
 }
 
@@ -250,7 +356,6 @@ void stim_Thread::stopStimulation(){
     stimulating=false;
 
     // CLEAN UP VARIABLES
-    //current = 3; // reset current -> NO! needed to switch between protocols
     current_increment = 2;
     numStimuli=0;
 }

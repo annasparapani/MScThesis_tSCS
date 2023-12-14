@@ -7,6 +7,7 @@
 #include "protocol2.h"
 #include "protocol3.h"
 #include "protocol4.h"
+#include "triangularstim.h"
 
 //STIMULATION THREAD
 #include "stim_thread.h"

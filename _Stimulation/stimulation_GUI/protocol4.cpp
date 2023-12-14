@@ -48,7 +48,7 @@ void Protocol4::startClicked(){
      //OPEN STIMULATION THREAD
      protocol=4; // set global variable protocol to enter the correct thread case to 1
      myThread->stimulating=true;
-     myThread->start(); // open the thread (using federica's code)
+     myThread->start(); // open the thread
 }
 
 void Protocol4::stopClicked(){

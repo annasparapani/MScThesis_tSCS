@@ -79,7 +79,6 @@ void Protocol2::stopClicked(){
     ui->Button_Stop->setEnabled(false);
     ui->Button_Home->setEnabled(true);
 
-
     // clear lcd displays
     ui->lcd_currentImposed->display(0);
     ui->lcdNumber_IPIImposed->display(0);

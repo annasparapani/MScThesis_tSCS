@@ -34,8 +34,8 @@ p, li { white-space: pre-wrap; }
    <widget class="QPushButton" name="Button_quit">
     <property name="geometry">
      <rect>
-      <x>380</x>
-      <y>300</y>
+      <x>370</x>
+      <y>330</y>
       <width>89</width>
       <height>41</height>
      </rect>
@@ -44,13 +44,13 @@ p, li { white-space: pre-wrap; }
      <string>QUIT</string>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>110</x>
       <y>100</y>
       <width>73</width>
-      <height>131</height>
+      <height>141</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -84,13 +84,13 @@ p, li { white-space: pre-wrap; }
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>190</x>
       <y>90</y>
       <width>161</width>
-      <height>181</height>
+      <height>221</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -120,6 +120,14 @@ p, li { white-space: pre-wrap; }
        <property name="text">
         <string>CONTINUOUS 
  STIMULATION</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="Button_triangularStim">
+       <property name="text">
+        <string>TRIANGULAR
+STIMULATION</string>
        </property>
       </widget>
      </item>
