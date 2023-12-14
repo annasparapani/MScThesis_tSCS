@@ -10,7 +10,7 @@ Protocol4::Protocol4(QWidget *parent) :
     ui->setupUi(this);
     myThread = new stim_Thread(this);
     ui->SpinBox_CurrentAmplitude->setValue(current_maxRamp); // set to maximum of ramp value found in protocol 4
-    ui->SpinBox_Frequency->setValue(1000/myThread->stimT);
+    ui->plainTextEdit_Frequency->setPlainText("50");
     ui->Button_Stop_2->setEnabled(false);
 
     connect(ui->Button_Home, &QPushButton::clicked, this, &Protocol4::backHome);
@@ -33,12 +33,16 @@ void Protocol4::backHome(){
 void Protocol4::startClicked(){
     // copy values from interface to thread variables
     current = ui->SpinBox_CurrentAmplitude->value();
-    //myThread->stimT=(1000/(ui->SpinBox_Frequency->value())); CURRENTLY NOT WORKING!
+
+    bool ConversionOk;
+    QString string = ui->plainTextEdit_Frequency->toPlainText();
+    double frequency = string.toDouble(&ConversionOk);
+    myThread->stimT = (1/frequency)*1000;
 
     // enable and disable objects
      ui->SpinBox_CurrentAmplitude->setEnabled(false);
      ui-> Button_Start_2->setEnabled(false);
-     ui->SpinBox_Frequency->setEnabled(false);
+     ui->plainTextEdit_Frequency->setEnabled(false);
      ui->Button_Stop_2->setEnabled(true);
      ui->Button_Home->setEnabled(false);
 
@@ -58,7 +62,7 @@ void Protocol4::stopClicked(){
     ui-> Button_Start_2->setEnabled(true);
     ui->Button_Stop_2->setEnabled(false);
     ui->Button_Home->setEnabled(true);
-    ui->SpinBox_Frequency->setEnabled(true);
+    ui->plainTextEdit_Frequency->setEnabled(true);
 
     // clear lcd display
     ui->lcd_currentImposed->display(0);

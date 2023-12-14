@@ -208,7 +208,8 @@ void stim_Thread::run(){
                 break;
             case 4: // CODE TO RUN PROTOCOL 4
                 cout<<"I'm running protocol 4"<<endl;
-                cout << "Current: "<< current << endl;
+                cout << "Current: "<< current <<"mA"<< endl;
+                cout << "stimT: "<< stimT <<"ms"<< endl;
 
                 loop_count = 1;
 
