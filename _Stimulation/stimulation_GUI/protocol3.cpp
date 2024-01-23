@@ -15,6 +15,7 @@ Protocol3::Protocol3(QWidget *parent) :
     ui->SpinBox_Frequency->setValue(1000/myThread->stimT);
     ui->Button_Stop_2->setEnabled(false);
     ui->SpinBox_Interval->setValue(myThread->ramp_Interval/1000);
+    ui->plainTextEdit_PW->setPlainText("1000");
 
     connect(ui->Button_Home, &QPushButton::clicked, this, &Protocol3::backHome);
     connect(ui->Button_Start_2, &QPushButton::clicked, this, &Protocol3::startClicked);
@@ -41,6 +42,12 @@ void Protocol3::startClicked(){
     myThread->stimT=(1000/(ui->SpinBox_Frequency->value()));
     myThread->ramp_Interval=ui->SpinBox_Interval->value()*1000;
 
+    //read PW
+    bool ConversionOk;
+    QString string = ui->plainTextEdit_PW->toPlainText();
+    double PW = string.toDouble(&ConversionOk);
+    myThread->PW=PW;
+
     // enable and disable objects
     ui->SpinBox_CurrentAmplitude->setEnabled(false); //disable the spin boxes to set the current and increment
     ui->SpinBox_CurrentIncrement->setEnabled(false);
@@ -49,6 +56,8 @@ void Protocol3::startClicked(){
     ui->Button_Stop_2->setEnabled(true);
     ui->Button_Start_2->setEnabled(false);
     ui->Button_Home->setEnabled(false);
+    ui->plainTextEdit_PW->setEnabled(false);
+
 
    // show parameters being imposed in the stimulation on the lcds
    ui->lcd_currentImposed->display(current);
@@ -71,6 +80,7 @@ void Protocol3::stopClicked(){
      ui->Button_Start_2->setEnabled(true);
      ui->Button_Stop_2->setEnabled(false);
      ui->Button_Home->setEnabled(true);
+     ui->plainTextEdit_PW->setEnabled(true);
 
      // clear lcd displays
      ui->lcd_currentImposed->display(0);

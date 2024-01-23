@@ -30,6 +30,7 @@ triangularStim::~triangularStim()
 }
 
 void triangularStim::backHome(){
+    myThread->calibrated=false; // do calibration again at the next protocol
     this->hide();
     static MainWindow *mainW = new MainWindow(this);
     mainW->show();
@@ -38,10 +39,6 @@ void triangularStim::backHome(){
 
 void triangularStim::startClicked(){
     // copy values from interface to thread variables
-    //current = ui->SpinBox_MaxCurrentAmplitude->value();
-    //myThread->waveLength = ui->SpinBox_WaveLength->value();
-    //double frequency = ui->SpinBox_Frequency->value();
-
     bool ConversionOk;
     QString string = ui->plainTextEdit_Frequency->toPlainText();
     double frequency = string.toDouble(&ConversionOk);
@@ -65,9 +62,10 @@ void triangularStim::startClicked(){
      ui->lcd_currentImposed->display(current);
 
      //OPEN STIMULATION THREAD
+     myThread->calibrated=false; // do calibration again
      protocol=5; // set global variable protocol to enter the correct thread case to 1
      myThread->stimulating=true;
-     myThread->start(); // open the thread (using federica's code)
+     myThread->start();
 }
 
 void triangularStim::stopClicked(){

@@ -65,7 +65,7 @@ p, li { white-space: pre-wrap; }
    <property name="geometry">
     <rect>
      <x>70</x>
-     <y>290</y>
+     <y>310</y>
      <width>221</width>
      <height>51</height>
     </rect>
@@ -108,7 +108,7 @@ p, li { white-space: pre-wrap; }
    <property name="geometry">
     <rect>
      <x>320</x>
-     <y>290</y>
+     <y>310</y>
      <width>223</width>
      <height>36</height>
     </rect>
@@ -130,8 +130,8 @@ Imposed (mA)</string>
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>70</x>
-     <y>170</y>
+     <x>80</x>
+     <y>160</y>
      <width>461</width>
      <height>81</height>
     </rect>
@@ -196,6 +196,30 @@ Amplitude (mA)</string>
      </layout>
     </item>
    </layout>
+  </widget>
+  <widget class="QLabel" name="label_PW">
+   <property name="geometry">
+    <rect>
+     <x>80</x>
+     <y>250</y>
+     <width>131</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Pulse Width (mus) 
+max 4000mus</string>
+   </property>
+  </widget>
+  <widget class="QPlainTextEdit" name="plainTextEdit_PW">
+   <property name="geometry">
+    <rect>
+     <x>210</x>
+     <y>250</y>
+     <width>81</width>
+     <height>31</height>
+    </rect>
+   </property>
   </widget>
  </widget>
  <resources/>

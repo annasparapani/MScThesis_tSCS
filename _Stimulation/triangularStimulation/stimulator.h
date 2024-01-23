@@ -3,8 +3,6 @@
 
 using namespace std;
 
-//#include "header.h"
-
 #include "smpt_client.h"
 #include "smpt_definitions.h"
 #include "smpt_definitions_data_types.h"
@@ -30,8 +28,11 @@ public:
     void one_pulse();
     void channelsInitialization(stimulator &stim, uint8_t nPoints);
 
-    void init_stimulation(Smpt_device *const device);
-
+    void init_stimulation_ll(Smpt_device *const device);
+    void init_stimulation_ml(Smpt_device *const device);
+    void fill_ml_init(Smpt_device *const device, Smpt_ml_init *const ml_init);
+    void fill_ml_get_current_data(Smpt_device *const device, Smpt_ml_get_current_data *const ml_get_current_data);
+    void fill_ml_update(Smpt_device *const device, Smpt_ml_update *const ml_update);
     void stop_stimulation(Smpt_device *const device);
 };
 

@@ -177,7 +177,7 @@ stimuli (s)</string>
    <property name="geometry">
     <rect>
      <x>310</x>
-     <y>280</y>
+     <y>290</y>
      <width>211</width>
      <height>111</height>
     </rect>
@@ -225,6 +225,29 @@ Imposed (mA)</string>
        </widget>
       </item>
      </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="layoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>270</x>
+     <y>210</y>
+     <width>201</width>
+     <height>72</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_5">
+    <item>
+     <widget class="QLabel" name="label_PW">
+      <property name="text">
+       <string>Pulse Width (mus)
+ max 4000 mus</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPlainTextEdit" name="plainTextEdit_PW"/>
     </item>
    </layout>
   </widget>

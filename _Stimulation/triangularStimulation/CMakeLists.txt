@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(stimulation_AnnaSparapani LANGUAGES CXX)
+project(triangularStimulation LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -21,16 +21,17 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
 
-#include_directories(HEADER_FILE_ONLY)
 
-#add_executable(provaFederico
- # main.cpp
-#)
+set(PROJECT_SOURCES
+        main.cpp
+        stimulator.cpp
+        stimulator.h
+)
 
 add_library(libsmpt STATIC IMPORTED)
 set_target_properties(libsmpt PROPERTIES
     IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/libsmpt.a)
 
 target_link_libraries(${PROJECT_NAME} pthread rt libsmpt)
-
-target_link_libraries(stimulation_AnnaSparapani Qt${QT_VERSION_MAJOR}::Core)
+target_link_libraries(triangularStimulation Qt${QT_VERSION_MAJOR}::Core)
+target_link_libraries(triangularStimulation rt pthread libsmpt libconfig++.a)
