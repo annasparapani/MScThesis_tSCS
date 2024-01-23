@@ -22,6 +22,7 @@ public:
     bool check_data;
     bool check_close;
 
+    int stim_Channel = 0;
     // PROTOCOL 1 parameters
     int totNStimuli=10; //number of stimuli delivered in protocol 1
     int PW=1000; //1ms PW for protocol 1

@@ -36,7 +36,7 @@ int thisCurrent = 0;
 // single stimuli
 int interStimDistance = 2000; //[ms] (2 s)
 int totNumberStimuli = 10;
-int minCurrent = 10; //[mA]
+int minCurrent = 7; //[mA]
 int maxCurrent = 100; //[mA] - safety measure: ramp interrupted whenever subject wants
 
 // 2 close stimuli
@@ -46,9 +46,9 @@ int maxTolerance = 80; // ---- TO SET ----
 int currentDoubleStimuli = 0.8 * maxTolerance;
 
 // continuous stim
-int minCurrent_continuous = 10 ; //[mA]
-int maxCurrent_continuous = 50; //[mA] - safety measure: ramp interrupted whenever subject wants
-int selectedCurrent_continuous = 20 ; //[mA] - current selected to be delivered for 10 minutes
+int minCurrent_continuous = 1 ; //[mA]
+int maxCurrent_continuous = 5; //[mA] - safety measure: ramp interrupted whenever subject wants
+int selectedCurrent_continuous = 4 ; //[mA] - current selected to be delivered for 10 minutes
 
 timespec addition(timespec a, timespec b) {
     timespec r;
@@ -237,7 +237,7 @@ void *threadTenSingleStim(void *a) {
     clock_gettime( CLOCK_MONOTONIC, &t_next);
     clock_gettime( CLOCK_MONOTONIC, &t_start);
 
-    int incremento=5; //[mA]
+    int incremento=1; //[mA]
     int numStimuli = 0;
 
     thisCurrent = minCurrent;
@@ -354,13 +354,13 @@ int main()
 
     running = true;
 
-    pthread_create(&thread, NULL, threadTenSingleStim, nullptr);
+    //pthread_create(&thread, NULL, threadTenSingleStim, nullptr);
 
-   // pthread_create(&thread, NULL, threadCloseStimuli, nullptr);
+    //pthread_create(&thread, NULL, threadCloseStimuli, nullptr);
 
-//    pthread_create(&thread, NULL, threadPeriodicStim_ramp, nullptr);
+    pthread_create(&thread, NULL, threadPeriodicStim_ramp, nullptr);
 
-//    pthread_create(&thread, NULL, threadPeriodicStim_constant10s, nullptr);
+    //pthread_create(&thread, NULL, threadPeriodicStim_constant10s, nullptr);
 
     pthread_join(thread, NULL);
 }

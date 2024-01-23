@@ -19,6 +19,7 @@ Protocol1::Protocol1(QWidget *parent) :
     ui->SpinBox_ISD->setValue(interstimulus_distance/1000);
     ui->progressBar_Pause->setRange(0,60);
     ui->progressBar_Pause->setValue(0);
+    ui->plainTextEdit_PW->setPlainText("1000");
 
     // CONNECT BUTTONS
     connect(ui->Button_Home, &QPushButton::clicked, this, &Protocol1::backHome);
@@ -48,6 +49,11 @@ void Protocol1::startClicked(){
     current_increment=ui->SpinBox_Increment->value();
     interstimulus_distance=ui->SpinBox_ISD->value();
     interstimulus_distance=interstimulus_distance*1000;
+    //read PW
+    bool ConversionOk;
+    QString string = ui->plainTextEdit_PW->toPlainText();
+    double PW = string.toDouble(&ConversionOk);
+    myThread->PW=PW;
 
     // enable and disable objects
     ui->SpinBox_CurrentAmplitude->setEnabled(false); //disable the spin boxes to set the current and increment
@@ -56,6 +62,7 @@ void Protocol1::startClicked(){
     ui->Button_Stop->setEnabled(true);
     ui->Button_Start->setEnabled(false);
     ui->Button_Home->setEnabled(false);
+    ui->plainTextEdit_PW->setEnabled(false);
 
     // show parameters being imposed in the stimulation on the lcds
     ui->LCD_Current->display(current);
@@ -77,6 +84,7 @@ void Protocol1::stopClicked(){
     ui->Button_Start->setEnabled(true);
     ui->Button_Stop->setEnabled(false);
     ui->Button_Home->setEnabled(true);
+    ui->plainTextEdit_PW->setEnabled(true);
     ui->LCD_Current->display(0);
     ui->LCD_PulseNo->display(0);
 }
