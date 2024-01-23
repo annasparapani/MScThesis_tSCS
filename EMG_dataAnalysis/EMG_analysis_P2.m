@@ -6,7 +6,7 @@
 % analysis is the identification of the PRM reflex, which is observed
 % around 50micros after the stimulation artefact on the EMG baseline. 
 
-clear all 
+clear all  
 close all
 clc
 
@@ -273,10 +273,10 @@ disp(T);
     groups_number=peak_groups_size(2); 
     doubletsGroup=cell(1,groups_number);
     for i=1:groups_number
-        doubletsGroup{i}= signal((peakLocsGroup{i}(1)-10):(peakLocsGroup{i}(end)+100));
+        doubletsGroup{i}= signal((peakLocsGroup{i}(1)-30):(peakLocsGroup{i}(end)+100));
     end 
     for i = 1:size(peakLocsGroup,2)
-         peakLocsLocalGroup{i}=peakLocsGroup{i}-peakLocsGroup{i}(1)+10; 
+         peakLocsLocalGroup{i}=peakLocsGroup{i}-peakLocsGroup{i}(1)+30; 
     end
  end
 
@@ -328,7 +328,7 @@ disp(T);
     for i=1:size(peakValuesGrouped,2)
         artefactsLocs{i}(1)=peakLocsLocalGroup{i}(1); 
         if size(peakLocsLocalGroup,2)>1
-            artefactsLocs{i}(2)=peakLocsLocalGroup{i}(1)+51; % approssimato!
+            artefactsLocs{i}(2)=peakLocsLocalGroup{i}(1)+51; % approssimato! 0.05s * 1024 Hz = 51,2 samples
                 % if size(peakValuesGrouped{i},1) > 1
                 %     % Find the two highest peaks and their locations
                 %     [~, sortedIndices] = maxk(peakValuesGrouped{i}, 2);
@@ -372,6 +372,7 @@ function [PAD, A1, A2] = computePAD(signal, artefactLocs, titleStr)
         
         startM(1:2,1) = findMwaveStart(signal{i}, artefactLocs{i});
         
+        end 
         if startM(1,1)==0 
             startM(1,1)=1; 
         end 
@@ -380,8 +381,8 @@ function [PAD, A1, A2] = computePAD(signal, artefactLocs, titleStr)
             startM(2,1)=1; 
         end 
 
-        M1 = signal{i}(startM(1):startM(1) + Mlength, 1);
-        M2 = signal{i}(startM(2):startM(2) + Mlength, 1);
+        M1 = signal{i}(startM(1)-20:startM(1) + Mlength, 1);
+        M2 = signal{i}(startM(2)-20:startM(2) + Mlength, 1);
 
         A1(i) = max(M1)-min(M1);
         A2(i) = max(M2)-min(M2); 
@@ -390,8 +391,8 @@ function [PAD, A1, A2] = computePAD(signal, artefactLocs, titleStr)
         subplot(3, 4, i), plot(signal{i}(:, 1)), hold on, 
         plot(artefactLocs{i}, signal{i}(artefactLocs{i}(:)), 'o'), 
         ylabel('mV'), title(titleStr);
-        plot(startM(1):startM(1) + Mlength, M1, 'Color', 'r');
-        plot(startM(2):startM(2) + Mlength, M2, 'Color', 'r'); 
+        plot(startM(1)-20:startM(1) + Mlength, M1, 'Color', 'r');
+        plot(startM(2)-20:startM(2) + Mlength, M2, 'Color', 'r'); 
         grid on
     end 
 end

@@ -56,7 +56,6 @@ x=EMGok;
 % Acquistion frequency EMG
 Fs_EMG=1024;
 time=0:1/Fs_EMG:length(EMGok)/Fs_EMG-1/Fs_EMG;
-
 % Raw data plots
 if plots_on
     figure()
@@ -198,15 +197,15 @@ art_locs=[];
 art_pks=[];
 for i = 1:length(locs6)
    meanPeakDistance = 10; 
-   minPeakHeight = 0.02; 
+   minPeakHeight = 0.002; 
 
-  [art_pk,art_loc] = findpeaks(hams_sx(locs6(i)-15:locs6(i)), ...
+  [art_pk,art_loc] = findpeaks(hams_sx(locs6(i)-30:locs6(i)), ...
       "MinPeakDistance",meanPeakDistance,"MinPeakHeight",minPeakHeight);
-  art_locs(i) = locs6(i)-15+art_loc; 
-  art_pks(i) = art_pk; 
+  art_locs(i) = locs6(i)-30+art_loc(1); 
+  art_pks(i) = art_pk(1); 
 end 
 if plots_on
-    figure()
+    figure();
     plot(hams_sx), hold on, plot(art_locs, art_pks, 'o', 'Color','g')
     title('Artefacts identified on Hams Sx')
 end 
@@ -233,17 +232,40 @@ MeanLatency = table(meanLatency_quadDx',meanLatency_hamsDx', meanLatency_gastDx'
     'hamsSx (ms)','gastSx (ms)', 'taSx (ms)',});
 
 % Display the table
-disp(MeanLatency);
+disp(MeanLatency)
 %%
 
-Mwaves5_art=buildMwave(locs5-meanLatency_hamsSx-5, 50, hams_sx); 
-plotMwave("M wave Hams SX", Mwaves5_art, Fs_EMG, meanLatency_hamsSx, 1);
+Mwaves5_art=buildMwave(locs5-meanLatency_hamsSx-5, 100, hams_sx); 
+figure();
+timeArray= (0:1/Fs_EMG:length(Mwaves5_art)/Fs_EMG-1/Fs_EMG)*1000; %ms
+plot(timeArray, Mwaves5_art(1,:),'LineWidth',1.2);
+title("M wave on Hams SX, 20mA stimulation");
+grid on;
+ylabel('mV');
+xlabel('time[ms]');
+
+% Calculate the average value
+avg_value = mean(Mwaves5_art(1,:));
+% Plot a band around the average value (±0.25)
+hold on;
+
+fill([timeArray, fliplr(timeArray)], [ones(size(timeArray))*(avg_value + 0.25), fliplr(ones(size(timeArray))*(avg_value - 0.25))], 'y', 'EdgeColor', 'none', 'FaceAlpha', 0.3);
+ylim([min(Mwaves5_art(i,:)-0.1) max(Mwaves5_art(i,:))+0.1]) % y limit scaled to the graph values
+
+art_locs_time(1)=(art_locs(1)/Fs_EMG);
+
+xline(5+art_locs_time(1), 'r', 'LineWidth', 2);
+yValue = -0.3;
+line([5+art_locs_time(1), 10 + meanLatency_hamsSx], [yValue, yValue], 'Color', 'b', 'LineWidth', 2);
+text(10 + meanLatency_hamsSx/2-2, yValue - 0.2, ['Latency ' num2str(meanLatency_hamsSx)], 'HorizontalAlignment', 'center','FontSize', 14);
+
+%plotMwave("M wave Hams SX", Mwaves5_art, Fs_EMG, meanLatency_hamsSx, 1);
 
 % Mwaves1_art=buildMwave(locs1-meanLatency_hamsSx-5, 50, quad_dx); 
 % plotMwave("M wave Quad DX", Mwaves1_art, Fs_EMG, meanLatency_quadDx, 1);
 
-Mwaves8_art=buildMwave(locs8-meanLatency_taSx-5,50,ta_sx); 
-plotMwave("M wave Ta SX", Mwaves8_art, Fs_EMG, meanLatency_taSx, 1);
+%Mwaves8_art=buildMwave(locs8-meanLatency_taSx-5,50,ta_sx); 
+%plotMwave("M wave Ta SX", Mwaves8_art, Fs_EMG, meanLatency_taSx, 1);
 
 %% Envelope of M Wave --> not used at the moment 
 % PRM_A_quadDx = EnvelopeMWave(Mwaves1, Fs_EMG, "Quad DX");
