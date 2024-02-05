@@ -4,20 +4,15 @@ clear all
 close all
 
 %% Load data left pedal
-[fnL,pL,fiL] = uigetfile('*.csv','Pick a csv file'); % data during stimulation
-[fnL_passive,pL_passive,fiL_passive] = uigetfile('*.csv','Pick a csv file for passive cycling');% control data during passive 
+[fnL,pL,fiL] = uigetfile('*.csv','Pick a csv file');
+
 %% Save as vectors left pedal
 dataL = readtable(fnL, 'NumHeaderLines',2);
 leftForce = table2array(dataL(:,1));
 leftAngle = table2array(dataL(:,2));
-% same for passive
-dataL_passive = readtable(fnL, 'NumHeaderLines',2);
-leftForce_passive = table2array(dataL_passive(:,1));
-leftAngle_passive = table2array(dataL_passive(:,2));
 
 %% Load data right pedal
 [fnR,pR,fiR] = uigetfile('*.csv','Pick a csv file');
-[fnR_passive,pR_passive,fiR_passive] = uigetfile('*.csv','Pick a csv file for passive cycling');% control data during passive 
 
 %% Save as vectors right pedal
 dataR = readtable(fnR, 'NumHeaderLines',2);
@@ -25,22 +20,11 @@ rightForce = table2array(dataR(:,1));
 rightAngle = table2array(dataR(:,2));
 xL = 1:size(dataL, 1);
 xR = 1:size(dataR, 1);
-% same for passive
-dataR_passive = readtable(fnR, 'NumHeaderLines',2);
-rightForce_passive = table2array(dataR_passive(:,1));
-rightAngle_passive = table2array(dataR_passive(:,2));
-xL_passive = 1:size(dataL_passive, 1);
-xR_passive = 1:size(dataR_passive, 1);
 
 %% Plot data
 figure(); 
-subplot(2,1,1),plot(xL, leftAngle, 'r', xR, rightAngle, 'b'), xlabel ('samples'), ylabel('Angle [°]'), ylim([-10 400]), grid on;
-hold on
-subplot(2,1,1),plot(xL_passive, leftAngle_passive, 'y', xR_passive, rightAngle_passive, 'g'), legend('left', 'right','left passive',  'right passive');
-
-subplot(2,1,2),plot(xL, leftForce, 'r', xR, rightForce, 'b'), xlabel ('samples'), ylabel('Force [N]'), ylim([-150 150]), grid on;
-hold on
-subplot(2,1,2),plot(xL_passive, leftForce_passive, 'y', xR_passive, rightForce_passive, 'g'), ylim([-150 150]), legend('left', 'right','left passive',  'right passive');
+subplot(2,1,1),plot(xL, leftAngle, 'r', xR, rightAngle, 'b'), xlabel ('samples'), ylabel('Angle [°]'), ylim([-10 400]), legend('left', 'right'), grid on;
+subplot(2,1,2),plot(xL, leftForce, 'r', xR, rightForce, 'b'), xlabel ('samples'), ylabel('Force [N]'), ylim([-150 150]), legend('left', 'right'), grid on;
 
 %% Select a period of pedaling
 locspi = 1;
@@ -51,7 +35,6 @@ tg_left_n = leftForce(locspi:locspfL);
 locspfR = length(xR);
 angle_nR = rightAngle(locspi:locspfR);
 tg_right_n = rightForce(locspi:locspfR);
-
 %% Divide cycles
 windows = 360;
 angle_cL = (linspace(0,359,windows));

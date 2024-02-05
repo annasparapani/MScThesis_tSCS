@@ -11,9 +11,6 @@ light_blue = [0 0.4470 0.7410];
 %% Load data
 [fn,p,fi] = uigetfile('*.csv','Pick a csv file');
 [~, fileName, ~] = fileparts(fn);
-% load control passive data 
-[fn_passive,p_passive,fi_passive] = uigetfile('*.csv','Pick a csv file');
-[~, fileName_passive, ~] = fileparts(fn_passive);
 
 %% Save as vectors for files WITHOUT TARGET POWER
 data = readtable(fn, 'NumHeaderLines',3);
@@ -27,18 +24,6 @@ gear = table2array(data(:,6));
 cadence = table2array(data(:,7));
 motorCurrent = table2array(data(:,8));
 
-% same for passive 
-data_passive = readtable(fn_passive, 'NumHeaderLines',3);
-pidCoeff_passive = table2array(data_passive(:,1))*100;
-totPower_passive = table2array(data_passive(:,2));
-movingAverPower_passive = table2array(data_passive(:,3));
-
-motorPower_passive = table2array(data_passive(:,4));
-stimCurr_passive = table2array(data_passive(:,5));
-gear_passive = table2array(data_passive(:,6));
-cadence_passive = table2array(data_passive(:,7));
-motorCurrent_passive = table2array(data_passive(:,8));
-
 %% Save as vectors for files WITH TARGET POWER
 data = readtable(fn, 'NumHeaderLines',3);
 pidCoeff = table2array(data(:,1))*100;
@@ -50,17 +35,6 @@ stimCurr = table2array(data(:,6));
 gear = table2array(data(:,7));
 cadence = table2array(data(:,8));
 motorCurrent = table2array(data(:,9));
-% same for passive
-data_passive = readtable(fn_passive, 'NumHeaderLines',3);
-pidCoeff_passive = table2array(data_passive(:,1))*100;
-totPower_passive = table2array(data_passive(:,2));
-movingAverPower_passive = table2array(data_passive(:,3));
-totTargetPower_passive = table2array(data_passive(:,4));
-motorPower_passive = table2array(data_passive(:,5));
-stimCurr_passive = table2array(data_passive(:,6));
-gear_passive = table2array(data_passive(:,7));
-cadence_passive = table2array(data_passive(:,8));
-motorCurrent_passive = table2array(data_passive(:,9));
 
 %% Compute mean and std
 averagedMotorPower = movmean(motorPower,3);
@@ -75,18 +49,7 @@ stdSumPower = std(sumPower);
 meanCadence = mean(cadence);
 stdCadence = std(cadence);
 
-% same for passive
-averagedMotorPower_passive = movmean(motorPower_passive,3);
-sumPower_passive = averagedMotorPower_passive + movingAverPower_passive;
 
-meanVolPower_passive = mean(movingAverPower_passive);
-stdVolPower_passive = std(movingAverPower_passive);
-meanMotorPower_passive = mean(averagedMotorPower_passive);
-stdMotorPower_passive = std(averagedMotorPower_passive);
-meanSumPower_passive = mean(sumPower_passive);
-stdSumPower_passive = std(sumPower_passive);
-meanCadence_passive = mean(cadence_passive);
-stdCadence_passive = std(cadence_passive);
 %% Create a table
 Mean = [meanVolPower; meanMotorPower; meanSumPower; meanCadence];
 Std = [stdVolPower; stdMotorPower; stdSumPower; stdCadence];
@@ -97,24 +60,10 @@ motorPowerStat = [meanMotorPower; stdMotorPower];
 sumPowerStat = [meanSumPower; stdSumPower];
 cadenceStat = [meanCadence; stdCadence];
 
-% same for passive
-Mean_passive = [meanVolPower_passive; meanMotorPower_passive; meanSumPower_passive; meanCadence_passive];
-Std_passive = [stdVolPower_passive; stdMotorPower_passive; stdSumPower_passive; stdCadence_passive];
-Values_passive = ["PedPower_passive"; "MotorPower_passive"; "SumPower_passive"; "Cadence_passive"];
-StatValue_passive = ["Mean_passive"; "Std_passive"];
-volPowerStat_passive = [meanVolPower_passive; stdVolPower_passive];
-motorPowerStat_passive = [meanMotorPower_passive; stdMotorPower_passive];
-sumPowerStat_passive = [meanSumPower_passive; stdSumPower_passive];
-cadenceStat_passive = [meanCadence_passive; stdCadence_passive];
-
 % Creare la tabella
 % tabella = table(StatValue, volPowerStat, motorPowerStat, sumPowerStat, cadenceStat);
 tabella = table(Values, Mean, Std);
 disp(tabella);
-
-% same for passive
-tabella_passive = table(Values_passive, Mean_passive, Std_passive);
-disp(tabella_passive);
 
 %% Plot data
 % Power
