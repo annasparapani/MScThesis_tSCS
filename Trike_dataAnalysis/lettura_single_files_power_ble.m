@@ -35,6 +35,13 @@ rightPower_passive = table2array(dataRP_passive(:,1));
 VectorSizeR_passive = table2array(dataRP_passive(:,2));
 xR_passive = 1:size(dataRP_passive, 1);
 
+%% Moving average
+window=15;
+leftPower = movmean(leftPower, window);
+rightPower = movmean(rightPower, window);
+leftPower_passive = movmean(leftPower_passive, window);
+rightPower_passive = movmean(rightPower_passive, window);
+
 %% Plot data
 figure(); 
 subplot(2, 1, 1), plot(xL, leftPower, 'r', xR, rightPower, 'b'), xlabel ('samples'), ylabel('Power [W]'), grid on;

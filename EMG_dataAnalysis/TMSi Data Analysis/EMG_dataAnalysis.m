@@ -1,5 +1,6 @@
 %% Load data
-% add to path "SAGA_interface" with all subfolders
+% add to path "SAGA_interface" with all subfolders and folders with the
+% data
 clear all
 close all
 clc
@@ -8,20 +9,21 @@ currpath = pwd;
 data_mot_emg = TMSiSAGA.Poly5.read(fullfile(PathName, FileName));
 fs = data_mot_emg.sample_rate;
 % Ask for f_stim value and toggle options
-prompt = {'Enter the f_stim value:', 'Stimulation', 'Cycling'};
+prompt = {'Enter the f_stim value:', 'Stimulation', 'Cycling', 'Voluntary'};
 dlgtitle = 'Input';
 dims = [1 35];
-definput = {'50', '0', '0'}; % Default values: f_stim=50, both toggles unchecked
+definput = {'50', '0', '0','0'}; % Default values: f_stim=50, both toggles unchecked
 options = inputdlg(prompt, dlgtitle, dims, definput);
 
 % Convert the input to numeric values
 f_stim = str2double(options{1}); % Convert from cell array to double
 stimOn = str2double(options{2});
 triggerOn = str2double(options{3});
+volOn = str2double(options{4});
 
 plots_on = 1;
-titles={'QUAD Dx mono','HAMS Dx mono', 'TA Dx mono', 'GAST Dx mono',...
-    'QUAD Sx mono','HAMS Sx mono', 'TA Sx mono', 'GAST Sx mono',...
+titles={'QUAD Dx mono','HAMS Dx mono', 'GAST Dx mono', 'TA Dx mono',...
+    'QUAD Sx mono','HAMS Sx mono', 'GAST Sx mono', 'TA Sx mono',...
     'Trigger','QUAD Dx bip',};
 %% Variables
 Emg_Signal=data_mot_emg.samples(:,:);
@@ -43,7 +45,6 @@ if plots_on
 end
 
 %% Filtering
-
 spectrumRaw=[]; figure("Name","Spectrum Raw"); % print raw spectrum
 for i=1:size(rawData,1)
     spectrumRaw(i,:) = pspectrum(rawData(i,:),fs);
@@ -71,12 +72,12 @@ for i=1:1
         filteredData(j,:) = filtfilt(d, filteredData(j,:)); 
     end 
 end 
-%filteredData=filteredBandPass;
 
 spectrumFiltered=[]; figure("Name","Spectrum filtered"); % print spectrum of filtered data
 for i=1:size(filteredData,1)
     spectrumFiltered(i,:) = pspectrum(filteredData(i,:),fs);
-    subplot(4,3,i), plot((0:length(spectrumFiltered(i,:))-1) * fs/length(spectrumFiltered(i,:)), spectrumFiltered(i,:));
+    L = length(rawData(i,:)); frequencies = fs*(0:(L/2))/L;
+    subplot(4,3,i), plot(frequencies, spectrumFiltered(i,:));
     ylabel('Power/Frequency (dB/Hz)'), xlabel('Frequency (Hz)'), title(titles(i));
 end 
 
@@ -150,7 +151,7 @@ end
 %% Envelope
 % Low-pass filtering 
 % Filter1: 100 Hz, 5 order
-envelopeData=[];filterFreq = 10; filterOrder = 5; 
+envelopeData=[];filterFreq = 5; filterOrder = 5; 
 [B, A] = butter(filterOrder, filterFreq/(fs/2), 'low'); 
 for i=1:size(rectData,1)
     envelopeData(i,:) = filtfilt(B, A, rectData(i,:)); 
@@ -234,7 +235,7 @@ for i=1:1
 end 
 if plots_on
     figure()
-    for i=1:10
+    for i=1:8
         subplot(4,3,i), plot(filteredData(i,:)), ylabel('mV'),xlabel('time(s)'), title(titles(i));
         hold on 
         subplot(4,3,i), plot(filteredData_passive(i,:)), ylabel('mV'),xlabel('time(s)'), title(titles(i));
@@ -247,7 +248,7 @@ end
 % rectification
 rectData_passive=abs(filteredData_passive);
 % envelope with low-pass filtering 
-envelopeData_passive=[];filterFreq = 10; filterOrder = 5; 
+envelopeData_passive=[];filterFreq = 5; filterOrder = 5; 
 [B, A] = butter(filterOrder, filterFreq/(fs/2), 'low'); 
 for i=1:size(rectData_passive,1)
     envelopeData_passive(i,:) = filtfilt(B, A, rectData_passive(i,:)); 
@@ -304,8 +305,8 @@ if triggerOn
 
 %%
     
-    muscle=2; 
-    segment=33; 
+    muscle=1; 
+    segment=40; 
     timecycle=linspace(0, size(segmentedData{muscle,segment},2)/fs, size(segmentedData{muscle,segment},2));
     timecycle_passive=linspace(0, size(segmentedData_passive{muscle,segment},2)/fs, size(segmentedData_passive{muscle,segment},2));
     figure(); 
@@ -346,3 +347,4 @@ end
 % [b, a] = sos2tf(sos, g); % Extract coefficients
 % filteredData = filter(b, a, rawData_filter(:,:)); %apply filter
 % %[pff,ff]=pwelch(filteredData(:,1),[],[],[],fs);
+
