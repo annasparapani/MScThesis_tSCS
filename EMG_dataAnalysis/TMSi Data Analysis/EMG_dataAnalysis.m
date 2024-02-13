@@ -77,7 +77,7 @@ spectrumFiltered=[]; figure("Name","Spectrum filtered"); % print spectrum of fil
 for i=1:size(filteredData,1)
     spectrumFiltered(i,:) = pspectrum(filteredData(i,:),fs);
     L = length(rawData(i,:)); frequencies = fs*(0:(L/2))/L;
-    subplot(4,3,i), plot(frequencies, spectrumFiltered(i,:));
+    subplot(4,3,i), plot((0:length(spectrumRaw(i,:))-1) * fs/length(spectrumRaw(i,:)), spectrumFiltered(i,:));
     ylabel('Power/Frequency (dB/Hz)'), xlabel('Frequency (Hz)'), title(titles(i));
 end 
 
@@ -137,6 +137,14 @@ if plots_on
             hold off;
         end 
     end
+%%
+spectrumFiltered=[]; figure("Name","Spectrum filtered"); % print spectrum of filtered data
+for i=1:size(filteredData,1)
+    spectrumFiltered(i,:) = pspectrum(noArtData(i,:),fs);
+    L = length(rawData(i,:)); frequencies = fs*(0:(L/2))/L;
+    subplot(4,3,i), plot((0:length(spectrumRaw(i,:))-1) * fs/length(spectrumRaw(i,:)), spectrumFiltered(i,:));
+    ylabel('Power/Frequency (dB/Hz)'), xlabel('Frequency (Hz)'), title(titles(i));
+end 
 
 %% Rectification
 

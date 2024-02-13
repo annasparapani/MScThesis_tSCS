@@ -6,6 +6,8 @@ t = 0:1/Fs:1;           % Time vector
 
 % Generate biphasic square wave
 biphasic_square_wave = square(2*pi*f*t, 50);
+biphasic_square_wave = biphasic_square_wave-mean(biphasic_square_wave);
+
 
 % Plot biphasic square wave in the time domain
 figure;
@@ -13,7 +15,7 @@ subplot(2,1,1);
 plot(t, biphasic_square_wave);
 title('Biphasic Square Wave in Time Domain');
 xlabel('Time (s)'); ylabel('Amplitude');
-ylim([0,2]);
+ylim([-2,2]);
 % Compute and plot spectrum
 L = length(biphasic_square_wave);
 Y = fft(biphasic_square_wave);
