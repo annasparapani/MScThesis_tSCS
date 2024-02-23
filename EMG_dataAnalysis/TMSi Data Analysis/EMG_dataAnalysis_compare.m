@@ -1,8 +1,9 @@
 %% Load data for multiple recordings
+% upload order: 50, 50 vol, 80, 80 vol, 20, 20 vol, passive
 clear all
 close all
 clc
-
+%% 
 % Get file names for multiple recordings
 currpath = pwd;
 num_recordings = 7; % Define the number of recordings
@@ -49,20 +50,38 @@ for rec = 1:num_recordings
     % Save the data for this recording into the structure array
     data_struct{rec} = recording_data;
 end
-
 clear RawData f_stim volOn triggerOn stimOn
-
+%%
+num_recordings = 7;
 plots_on = 1;
+fs=2000;
 titles_recs={'50Hz', '50Hz + vol','80Hz', '80Hz + vol', '20Hz', '20Hz + vol','passive'}; 
 titles_muscles={'QUAD Dx mono','HAMS Dx mono', 'GAST Dx mono', 'TA Dx mono',...
     'QUAD Sx mono','HAMS Sx mono', 'GAST Sx mono', 'TA Sx mono',...
     'Trigger','QUAD Dx bip',};
+Pink = [245, 235, 235; 244, 217, 229; 230, 176 201; 222, 140, 174; ...
+    215, 98, 147; 206, 150, 160; 191, 97, 126; 207, 65, 119; 178, 46, 92; ...
+    129 27 60]/255; % 2 and 7
+Blue = [230, 241, 246; 203, 224, 236; 168, 201, 222; 125, 175, 208; ...
+    86, 146, 188; 59, 110, 150; 35, 74, 108]/255; % 2 and 5
+Green = [228, 241, 228; 209, 228, 211; 168, 204, 171; 128, 183, 132; ...
+    98, 168, 101; 70, 134, 71; 40, 87, 49]/255; % 2 and 4
+Yellow = [0.9290 0.6940 0.1250; 0.9290 0.6940 0.1250; 0.9290 0.6940 0.1250;
+    0.9290 0.6940 0.1250; 0.9290 0.6940 0.1250;0.9290 0.6940 0.1250];
+Orange = [0.8500 0.3250 0.0980; 0.8500 0.3250 0.0980;0.8500 0.3250 0.0980;
+    0.8500 0.3250 0.0980; 0.8500 0.3250 0.0980;0.8500 0.3250 0.0980];
+Red = [255, 255, 178; 254, 217, 118; 254, 178, 76; 221, 134, 70; ...
+    252, 78, 42; 227, 26, 28; 177, 0, 38]/255;
+Black = [0, 0, 0; 127, 127, 127; 254, 178, 76; 221, 134, 70; ...
+    252, 78, 42; 227, 26, 28; 177, 0, 38]/255;
+colors{1} = Pink; colors{2} = Blue; colors{3} = Green; colors{4} = Yellow; 
+colors{5} = Orange; colors{6} = Black; colors{7} = Red; 
 
 %% Filtering
 filteredDataAll=cell(num_recordings,1); 
 for rec=1:num_recordings
     rawData=data_struct{rec}.rawData;
-    % spectrumRaw=[]; figure("Name","Spectrum Raw"); % print raw spectrum
+    % spectrumRaw=[]; figi ure("Name","Spectrum Raw"); % print raw spectrum
     % for i=1:size(rawData,1)
     %     spectrumRaw(i,:) = pspectrum(rawData(i,:),fs);
     %     subplot(4,3,i), plot((0:length(spectrumRaw(i,:))-1) * fs/length(spectrumRaw(i,:)), spectrumRaw(i,:));
@@ -106,10 +125,6 @@ for rec=1:num_recordings
     data_struct{rec}.filteredData=filteredData;
 end 
 
-if stimOn&(triggerOn==0) % calibrazione, stampo il bipolare del quadricipite dx
-    figure();
-    plot(time, filteredData(10,:), title(10)); 
-end
 clear filtereData
 %% Artefacts Removal
 % 1. diff fa differenza tra punto e successivo 
@@ -124,16 +139,25 @@ for rec=1:(num_recordings)
         MinPeakDistance=(fs/data_struct{rec}.f_stim)-5; 
         for i=1:(size(filteredData,1)-2)
             if (i==3||i==4||i==7||i==8) MinPeakHeight = 10; 
-            else MinPeakHeight = 50;
+            else MinPeakHeight = 20;
             end 
             [cycle_pks, cycle_locs]=findpeaks(filteredData(i,:),"MinPeakDistance",MinPeakDistance,"MinPeakHeight",MinPeakHeight);
             offset=mean(filteredData(i,:));
             for j=1:length(cycle_locs)
                 if(cycle_locs(j)<6 && j==1)
-                    noArtData(i,cycle_locs(j)-(cycle_locs(j)-2):cycle_locs(j)+4)=offset;
-                else noArtData(i,cycle_locs(j)-5:cycle_locs(j)+3)=offset;
+                    noArtData(i,cycle_locs(j)-(cycle_locs(j)-2):cycle_locs(j)+5)=offset;
+                else noArtData(i,cycle_locs(j)-5:cycle_locs(j)+5)=offset;
                 end 
-            end 
+            end
+            [cycle_pks, cycle_locs]=findpeaks(noArtData(i,:),"MinPeakDistance",MinPeakDistance,"MinPeakHeight",-MinPeakHeight);
+            offset=mean(filteredData(i,:));
+            for j=1:length(cycle_locs)
+                if(cycle_locs(j)<6 && j==1)
+                    noArtData(i,cycle_locs(j)-(cycle_locs(j)-2):cycle_locs(j)+5)=offset;
+                else noArtData(i,cycle_locs(j)-5:cycle_locs(j)+5)=offset;
+                end 
+            end
+
         end 
         if plots_on
         figure('Name', titles_recs{rec})
@@ -148,25 +172,27 @@ for rec=1:(num_recordings)
     end 
     data_struct{rec}.noArtData=noArtData; clear noArtData; 
 end 
-
-if stimOn&(triggerOn==0)% calibrazione
-    for i=1:(size(filteredData,1))
-        [cycle_pks, cycle_locs]=findpeaks(filteredData(i,:),"MinPeakDistance",1000,"MinPeakHeight",20);
-        offset=mean(filteredData(i,:));
-        for j=1:length(cycle_locs)
-            if(cycle_locs(j)<6 & j==1)
-                noArtData(i,cycle_locs(j)-(cycle_locs(j)-1):cycle_locs(j)+3)=offset;
-            else noArtData(i,cycle_locs(j)-5:cycle_locs(j)+5)=offset;
-            end 
-        end 
-    end
-
-end 
 clear noArtData
-%% Offset removal
 
+%% Per acquisizione 13.02 Samuele - rimozione picco in passivo 
+% figure(); 
+% for i = 1:8 % per tutti e otto i canali 
+%     noArtData = data_struct{7}.filteredData(i,:);
+%     subplot(3,3,i), plot(data_struct{7}.filteredData(i,:)); hold on 
+%     [peaks_passive, locs_passive] = findpeaks(data_struct{7}.filteredData(i,:),"MinPeakDistance",50000,"MinPeakHeight",500); 
+%     [~, maxIndex] = max(peaks_passive);
+%     offset=noArtData(locs_passive(maxIndex)-4000:locs_passive(maxIndex)-2000);
+%     noArtData(locs_passive(maxIndex)-2000:locs_passive(maxIndex)) = offset;
+% 
+%     offset=noArtData(locs_passive(maxIndex)+2000:locs_passive(maxIndex)+4000);
+%     noArtData(locs_passive(maxIndex):locs_passive(maxIndex)+2000) = offset;
+% 
+%     data_struct{7}.noArtData(i,:) = noArtData; 
+%     subplot(3,3,i), plot(data_struct{7}.noArtData(i,:)); 
+% end 
+%% Offset removal
 for rec=1:num_recordings
-    noOffData=data_struct{rec}.noArtData; 
+    noOffData=data_struct{rec}.noArtData;   
     noOffData = noOffData - mean(noOffData,2); 
     data_struct{rec}.noOffData = noOffData;  
     
@@ -182,7 +208,7 @@ clear noOffData
 %% Rectification
 
 for rec=1:num_recordings
-    data_struct{rec}.rectData=abs(data_struct{rec}.noArtData);
+    data_struct{rec}.rectData=abs(data_struct{rec}.noOffData);
     if plots_on
         figure('Name', titles_recs{rec})
         for i=1:size(data_struct{rec}.rectData,1)
@@ -217,7 +243,7 @@ triggerLocsAll = cell(num_recordings,1);
 smoothedDataAll = cell(num_recordings,1);
 for rec = 1:num_recordings
     % add later trigger on if data_struct{rec}.
-    [cycle_pks,cycle_locs]=findpeaks(-data_struct{rec}.rawData(9,:),"MinPeakDistance",1000,"MinPeakHeight",10000); 
+    [cycle_pks,cycle_locs]=findpeaks(data_struct{rec}.rawData(9,:),"MinPeakDistance",1000,"MinPeakHeight",1000); 
     triggerLocsAll{rec} = cycle_locs; 
     % smooth signal over for plot
     smoothedData=[]; 
@@ -230,10 +256,10 @@ clear smoothedData
 for i=1:8
     figure('Name', titles_muscles{i})
     for rec = 1:num_recordings
-        xAxis = time(1:length(data_struct{rec}.smoothedData(i,triggerLocsAll{rec}(2):end)));
+        %xAxis = time(1:length(data_struct{rec}.smoothedData(i,triggerLocsAll{rec}(2):end)));
         if rec==7
-            plot(xAxis, data_struct{rec}.smoothedData(i,triggerLocsAll{rec}(2):end),'r','LineWidth',2)
-        else plot(xAxis, data_struct{rec}.smoothedData(i,triggerLocsAll{rec}(2):end),'LineWidth',0.8)
+            plot(data_struct{rec}.smoothedData(i,triggerLocsAll{rec}(2):end),'r','LineWidth',2)
+        else plot(data_struct{rec}.smoothedData(i,triggerLocsAll{rec}(2):end),'LineWidth',0.8)
         end 
         title(titles_muscles(i));
         ylabel("EMG Amplitude [µV]"); xlabel("Time (s)")
@@ -247,6 +273,11 @@ meanActivations = cell(num_recordings,1);
 for rec=1:num_recordings
     meanActivations{rec} = mean(data_struct{rec}.envelopeData,2);
 end
+
+for rec=1:num_recordings-1
+    meanActivations{rec} = meanActivations{rec}-meanActivations{7} ;
+end
+
 column_names={'Muscle', '50Hz','50 Hz + vol', '80Hz', '80Hz+vol','20Hz',...
     '20Hz+vol', 'Passive Cyling'};
 Tmean = table(titles_muscles(1:8)', meanActivations{1}, meanActivations{2}, ...
@@ -265,17 +296,17 @@ Tvar = table(titles_muscles(1:8)', varActivations{1}, varActivations{2}, ...
     varActivations{3}, varActivations{4}, varActivations{5}, varActivations{6}, ...
     varActivations{7}, 'VariableNames', column_names)
 
-%% boxplots to compare mean activations
-for i=1:8 % iterate for all muscles
-    figure('Name', titles_muscles{i}); 
-    for rec=1:num_recordings
-         x_pos = rec; 
-        boxplot(envelopeDataAll{rec}(i,:), 'Positions', x_pos, 'Widths', 0.15);
-        hold on
-    end
-    title(titles_muscles(i));
-    legend('50Hz', '50Hz + vol','80Hz', '80Hz + vol', '20Hz', '20Hz + vol','passive')
-end 
+% %% boxplots to compare mean activations
+% for i=1:8 % iterate for all muscles
+%     figure('Name', titles_muscles{i}); 
+%     for rec=1:num_recordings
+%         x_pos = rec; 
+%         boxplot(data_struct{rec}.envelopeData(i,:), 'Positions', x_pos, 'Widths', 0.15);
+%         hold on
+%     end
+%     title(titles_muscles(i));
+%     legend('50Hz', '50Hz + vol','80Hz', '80Hz + vol', '20Hz', '20Hz + vol','passive')
+% end 
 
 
 %% Cycling segmentation
@@ -291,8 +322,8 @@ end
 
 %% Plotting data for few revolutions 
     
-muscle=5; % HAMS DX  
-segment=65;
+muscle=1; % HAMS DX  
+segment=34;
 
 figure('Name', 'Single Cycles Activations')
 for rec = 1:num_recordings
@@ -327,7 +358,7 @@ for rec = 1:num_recordings
    data_struct{rec}.averagedCycle = averagedCycles; 
    clear currentMuscle averagedCycles allCycles cycleLength
 end
-%%
+%% Averaged cycles plots - separated
 for i = 1:8 
     figure('Name', titles_muscles{i})
     for rec = 1:num_recordings
@@ -344,4 +375,34 @@ for i = 1:8
     title("Mean revolution EMG activation on "+titles_muscles(i));
     legend(titles_recs)
     hold off
+end 
+%% Averaged cycles plots - on same fig
+figure()
+for i = 1:8 
+    %figure('Name', titles_muscles{i})
+    for rec = 1:4
+        timecycle=linspace(0, size(data_struct{2*rec-1}.averagedCycle,2)/fs, size(data_struct{2*rec-1}.averagedCycle,2));
+        if rec == 4 % passive with bolder line
+           subplot(3,3,i), plot(timecycle,movmean(data_struct{2*rec-1}.averagedCycle(i,:),40), 'k','LineWidth',0.8), 
+           xlabel('time(s)'), ylabel('EMG (µV)'); 
+        else 
+            subplot(3,3,i), plot(timecycle,movmean(data_struct{2*rec-1}.averagedCycle(i,:),40), 'LineWidth', 1.5 , 'color',colors{rec}(3,:)), 
+            hold on 
+            timecycle=linspace(0, size(data_struct{2*rec}.averagedCycle,2)/fs, size(data_struct{2*rec}.averagedCycle,2));
+            subplot(3,3,i), plot(timecycle,movmean(data_struct{2*rec}.averagedCycle(i,:),40), 'LineWidth',1, 'color', colors{rec}(6,:))
+            xlabel('time(s)'), ylabel('EMG (µV)');
+        end 
+        title(titles_muscles(i))
+    end 
+    hold off
+end 
+
+for i=1:4
+    if i == 4
+            subplot(3,3,9), plot(0,0, 'color','k', 'LineWidth', 2 ); hold on 
+    else 
+        subplot(3,3,9), plot(0,0, 'color',colors{i}(3,:), 'LineWidth', 2 ); hold on 
+        plot(0,0, 'color', colors{i}(5,:),'LineWidth',1), title("legend"); 
+        h=legend(titles_recs); set(h,'FontSize',14);
+    end
 end 

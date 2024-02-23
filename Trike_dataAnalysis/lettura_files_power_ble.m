@@ -21,11 +21,11 @@ pidCoeff = table2array(data(:,1))*100;
 totPower = table2array(data(:,2));
 movingAverPower = table2array(data(:,3));
 
-motorPower = table2array(data(:,4));
-stimCurr = table2array(data(:,5));
-gear = table2array(data(:,6));
-cadence = table2array(data(:,7));
-motorCurrent = table2array(data(:,8));
+motorPower = table2array(data(:,8));
+stimCurr = table2array(data(:,9));
+gear = table2array(data(:,10));
+cadence = table2array(data(:,11));
+motorCurrent = table2array(data(:,12));
 
 % same for passive 
 data_passive = readtable(fn_passive, 'NumHeaderLines',3);
@@ -33,11 +33,11 @@ pidCoeff_passive = table2array(data_passive(:,1))*100;
 totPower_passive = table2array(data_passive(:,2));
 movingAverPower_passive = table2array(data_passive(:,3));
 
-motorPower_passive = table2array(data_passive(:,4));
-stimCurr_passive = table2array(data_passive(:,5));
-gear_passive = table2array(data_passive(:,6));
-cadence_passive = table2array(data_passive(:,7));
-motorCurrent_passive = table2array(data_passive(:,8));
+motorPower_passive = table2array(data_passive(:,8));
+stimCurr_passive = table2array(data_passive(:,9));
+gear_passive = table2array(data_passive(:,10));
+cadence_passive = table2array(data_passive(:,11));
+motorCurrent_passive = table2array(data_passive(:,12));
 
 %% Save as vectors for files WITH TARGET POWER
 data = readtable(fn, 'NumHeaderLines',3);
@@ -45,22 +45,22 @@ pidCoeff = table2array(data(:,1))*100;
 totPower = table2array(data(:,2));
 movingAverPower = table2array(data(:,3));
 totTargetPower = table2array(data(:,4));
-motorPower = table2array(data(:,5));
-stimCurr = table2array(data(:,6));
-gear = table2array(data(:,7));
-cadence = table2array(data(:,8));
-motorCurrent = table2array(data(:,9));
+motorPower = table2array(data(:,8));
+stimCurr = table2array(data(:,9));
+gear = table2array(data(:,10));
+cadence = table2array(data(:,11));
+motorCurrent = table2array(data(:,12));
 % same for passive
 data_passive = readtable(fn_passive, 'NumHeaderLines',3);
 pidCoeff_passive = table2array(data_passive(:,1))*100;
 totPower_passive = table2array(data_passive(:,2));
 movingAverPower_passive = table2array(data_passive(:,3));
 totTargetPower_passive = table2array(data_passive(:,4));
-motorPower_passive = table2array(data_passive(:,5));
-stimCurr_passive = table2array(data_passive(:,6));
-gear_passive = table2array(data_passive(:,7));
-cadence_passive = table2array(data_passive(:,8));
-motorCurrent_passive = table2array(data_passive(:,9));
+motorPower_passive = table2array(data_passive(:,8));
+stimCurr_passive = table2array(data_passive(:,9));
+gear_passive = table2array(data_passive(:,10));
+cadence_passive = table2array(data_passive(:,11));
+motorCurrent_passive = table2array(data_passive(:,12));
 
 %% Compute mean and std
 averagedMotorPower = movmean(motorPower,3);

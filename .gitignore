@@ -121,3 +121,5 @@ codegen/
 
 # Octave session info
 octave-workspace
+#Matlab heavy files
+*.mat 
