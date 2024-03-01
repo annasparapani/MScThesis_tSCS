@@ -21,11 +21,11 @@ Black = [0, 0, 0; 127, 127, 127; 254, 178, 76; 221, 134, 70; ...
 colors{1} = Pink; colors{2} = Blue; colors{3} = Green; colors{4} = Yellow; 
 colors{5} = Orange; colors{6} = Black; colors{7} = Red; 
 
+num_recordings = 7; % Change this to the number of acquisitions you have
 titles_recs={'passive', '50Hz+vol', '50Hz','80Hz+vol', '80Hz', '20Hz + vol', '20Hz'};
 
 %% Load data for left pedal
 % loading order = passive, 50 vol, 50, 80 vol, 80, 20 vol, 20
-num_recordings = 4; % Change this to the number of acquisitions you have
 importData = cell(num_recordings, 1); % Store acquisitions in a cell array
 for rec = 1:num_recordings
     % Load data for each acquisition
@@ -57,7 +57,7 @@ for rec = 1:num_recordings
     importData{rec}.rightAngle = angle;
     importData{rec}.xR = 1:size(data, 1);
 end
-
+clear data force angle 
 %% Plot data
 %Left
 triggerLocsLeft = cell(num_recordings,1);
@@ -119,10 +119,65 @@ end
 legend('Passive', 'Passive MA','50Hz + vol', '50Hz + vol MA', '50Hz', ...
     '50Hz MA','80Hz + vol','80Hz + vol MA', '80Hz','80Hz MA',...
      '20Hz + vol','20Hz + vol MA','20Hz', '20Hz MA');
-       
+%% per acquisizione Cecere 28.02 - picco forze durante 80 + vol 
+figure();
+% right angle
+for rec = 1:num_recordings
+    for i = 2:length(importData{rec}.rightAngle)
+        if importData{rec}.rightAngle(i) > 360
+           importData{rec}.rightAngle(i) = importData{rec}.rightAngle(i-1);  % Replace with the previous value
+        end
+        if importData{rec}.rightAngle(i) < 0 
+           importData{rec}.rightAngle(i) = importData{rec}.rightAngle(i-1);  % Replace with the previous value
+        end
+    end
+    plot(importData{rec}.rightAngle); hold on;
+end
+% left angle
+figure(); 
+for rec = 1:num_recordings
+    for i = 2:length(importData{rec}.leftAngle)
+        if importData{rec}.leftAngle(i) > 360
+            importData{rec}.leftAngle(i) = importData{rec}.leftAngle(i-1);  % Replace with the previous value
+        end
+        if importData{rec}.leftAngle(i) < 0 
+           importData{rec}.leftAngle(i) = importData{rec}.rightAngle(i-1);  % Replace with the previous value
+        end
+    end
+    plot(importData{rec}.leftAngle); hold on;
+end
+%%
+% left force
+figure();
+for rec = 1:num_recordings
+    for i = 2:length(importData{rec}.leftForce)
+        if importData{rec}.leftForce(i) > 120
+           importData{rec}.leftForce(i) = importData{rec}.leftForce(i-1);  % Replace with the previous value
+        end
+        if importData{rec}.leftForce(i) < -120
+           importData{rec}.leftForce(i) = importData{rec}.leftForce(i-1);  % Replace with the previous value
+        end
+    end
+    plot(importData{rec}.leftForce); hold on;
+end
+
+% right force
+figure();
+for rec = 1:num_recordings
+    for i = 2:length(importData{rec}.rightForce)
+        if importData{rec}.rightForce(i) > 80
+           importData{rec}.rightForce(i) = importData{rec}.rightForce(i-1);  % Replace with the previous value
+        end
+        if importData{rec}.rightForce(i) < -80 
+           importData{rec}.rightForce(i) = importData{rec}.rightForce(i-1);  % Replace with the previous value
+        end
+    end
+    plot(importData{rec}.rightForce); hold on;
+end
+
 %% Interpolation
 for rec=1:num_recordings
-    [pks_left,locs_left] = findpeaks(importData{rec}.leftAngle, 'MinPeakHeight', 350);
+    [pks_left,locs_left] = findpeaks(importData{rec}.leftAngle, 'MinPeakHeight', 200);
     num_samples_per_cycle = 360;
     % Preallocate an array to store interpolated force data for each cycle
     interpolated_force_cycles = zeros(num_samples_per_cycle, numel(locs_left)-1);
@@ -139,25 +194,39 @@ for rec=1:num_recordings
     end
     importData{rec}.interpolatedForceLeft = interpolated_force_cycles;
     importData{rec}.meanCycleForceLeft = mean(importData{rec}.interpolatedForceLeft,2);
-    importData{rec}.stddevCycleForceRight = std(importData{rec}.interpolatedForceLeft,[],2);
+    importData{rec}.stddevCycleForceLeft = std(importData{rec}.interpolatedForceLeft,[],2);
     importData{rec}.differentalForceLeft = importData{rec}.meanCycleForceLeft - importData{1}.meanCycleForceLeft;
 
 end 
 
 figure('Name', 'Force during an averaged cycle - left pedal'); 
 for rec = 2:num_recordings
-    subplot(2,3,rec-1); 
+    subplot(3,2,rec-1) 
+    % if rec == 1 subplot(4,2,rec-1); % per Cecere
+    % else subplot(4,2,rec); 
+    % end 
+    curve1=importData{1}.meanCycleForceLeft + importData{1}.stddevCycleForceLeft ;
+    curve2=importData{1}.meanCycleForceLeft - importData{1}.stddevCycleForceLeft ;
+    inBetween = [curve1; flipud(curve2)]; xAxis = [(1:360)'; flipud((1:360)')];
+    fill(xAxis, inBetween, Yellow(1,:), 'LineStyle', 'none', 'FaceAlpha', 0.3);
+    hold on
+    curve1=importData{rec}.meanCycleForceLeft+ importData{rec}.stddevCycleForceLeft ;
+    curve2=importData{rec}.meanCycleForceLeft - importData{rec}.stddevCycleForceLeft ;
+    inBetween = [curve1; flipud(curve2)]; xAxis = [(1:360)'; flipud((1:360)')];
+    
+    fill(xAxis, inBetween, Blue(2,:), 'LineStyle', 'none', 'FaceAlpha', 0.5);
     plot(1:360,importData{1}.meanCycleForceLeft,'LineWidth',1.5, 'color', colors{7}(4, :)); hold on
     plot(1:360,importData{rec}.meanCycleForceLeft,'LineWidth', 2, 'color', colors{2}(5, :));
     plot(1:360, importData{1}.differentalForceLeft, 'LineWidth',0.5, 'color',colors{7}(7, :))
     plot(1:360, importData{rec}.differentalForceLeft, 'LineWidth',1.5,'color', colors{2}(4, :))
     grid on, xlim([0,360]), title("Passive vs "+titles_recs{rec}+" force")
     xlabel('Crank Angle [°]'), ylabel('Force[N]');
-    legend('Passive', 'tSCS', '', 'Passive - tSCS')
+    legend('','','Passive', 'tSCS', '', 'Passive - tSCS')
+
 end 
 %% 
 for rec=1:num_recordings
-    [pks_right,locs_right] = findpeaks(importData{rec}.rightAngle, 'MinPeakHeight', 350);
+    [pks_right,locs_right] = findpeaks(importData{rec}.rightAngle, 'MinPeakHeight', 200);
     num_samples_per_cycle = 360;
     % Preallocate an array to store interpolated force data for each cycle
     interpolated_force_cycles = zeros(num_samples_per_cycle, numel(locs_right)-1);
@@ -176,58 +245,35 @@ for rec=1:num_recordings
     importData{rec}.meanCycleForceRight = mean(importData{rec}.interpolatedForceRight,2);
     importData{rec}.stddevCycleForceRight = std(importData{rec}.interpolatedForceRight,[],2);
     importData{rec}.differentalForceRight = importData{rec}.meanCycleForceRight - importData{1}.meanCycleForceRight;
-
 end
-
+clear interpolated_force_cycles interpolated_force
 figure('Name', 'Force during an averaged cycle - right pedal'); 
 for rec = 2:num_recordings
-    subplot(2,3,rec-1); 
-    plot(importData{1}.meanCycleForceRight, 'r','LineWidth',1.5, 'color', colors{7}(4, :)); hold on
-    plot(importData{rec}.meanCycleForceRight,'LineWidth', 2, 'color', colors{2}(5, :));
+    subplot(3,2,rec-1);
+    % if rec == 1 subplot(4,2,rec-1); % per Cecere
+    % else subplot(4,2,rec); 
+    % end 
+    curve1=importData{1}.meanCycleForceRight + importData{1}.stddevCycleForceRight ;
+    curve2=importData{1}.meanCycleForceRight - importData{1}.stddevCycleForceRight ;
+    inBetween = [curve1; flipud(curve2)]; xAxis = [(1:360)'; flipud((1:360)')];
+    fill(xAxis, inBetween, Yellow(1,:), 'LineStyle', 'none', 'FaceAlpha', 0.3); hold on
+    curve1=importData{rec}.meanCycleForceRight + importData{rec}.stddevCycleForceRight ;
+    curve2=importData{rec}.meanCycleForceRight - importData{rec}.stddevCycleForceRight ;
+    inBetween = [curve1; flipud(curve2)]; xAxis = [(1:360)'; flipud((1:360)')];
+    fill(xAxis, inBetween, Blue(2,:), 'LineStyle', 'none', 'FaceAlpha', 0.5);
+
+    plot(importData{1}.meanCycleForceRight,'LineWidth',1.5, 'color', colors{7}(4, :))
+    plot(importData{rec}.meanCycleForceRight,'LineWidth', 2, 'color', colors{2}(5, :))
     plot(1:360, importData{1}.differentalForceRight, 'LineWidth',0.5, 'color',colors{7}(7, :))
     plot(1:360, importData{rec}.differentalForceRight, 'LineWidth',1.5,'color', colors{2}(4, :))
     grid on, xlim([0,360]), title("Passive vs "+titles_recs{rec}+" force")
     xlabel('Crank Angle [°]'), ylabel('Force[N]');
-    legend('Passive', 'tSCS', '', 'Passive - tSCS')
+    legend('','','Passive', 'tSCS', '', 'Passive - tSCS')
     
 end 
 
-%% Grafici : Compute Mean and Standard Deviation
-
-tg_mean_left=mean(tg_left');
-tg_std_left=std(tg_left');
-curve1_left=tg_mean_left+tg_std_left;
-curve2_left=tg_mean_left-tg_std_left;
-x2_left = [flipud(crank_angle_left); crank_angle_left];
-
-tg_mean_right=mean(tg_right');
-tg_std_right=std(tg_right');
-curve1_right=tg_mean_right+tg_std_right;
-curve2_right=tg_mean_right-tg_std_right;
-x2_right = [flipud(crank_angle_right); crank_angle_right];
-
-figure()
-inBetween = [flipud(curve1_left'); curve2_left'];fill(x2_left, inBetween, Blue(2, :),...
-    'LineStyle','none', 'FaceAlpha',.5);...
-    hold on; plot(crank_angle_left,tg_mean_left,'LineWidth', 2,'color', Blue(5, :)),...
-    xlim([0  max(crank_angle_left)]),xlabel('Crank Angle [°]-0° right pedal in upper position'), ylabel('Force[N]');
-hold on
-inBetween = [flipud(curve1_right'); curve2_right'];fill(x2_right, inBetween, Green(2, :),...
-    'LineStyle','none', 'FaceAlpha',.5);...
-    hold on; plot(crank_angle_right,tg_mean_right,'LineWidth', 2,'color', Green(5, :)),...
-    xlim([0  max(crank_angle_right)]),xlabel('Crank Angle [°]-0° right pedal in upper position'), ylabel('Force[N]');
-title( 'Tangential Force - Blue=Left,Green=Right')
-
-%% FINE NICOLE
-
 %% Select a period of pedaling, divide in cycles and compute the power
-
-cyclicData = cell(num_recordings,1);
-powerData = cell(num_recordings,1);
 windows = 360;
-angle_cL = (linspace(0,359,windows)); 
-angle_cR = (linspace(0,359,windows)); 
-
 for rec = 1:num_recordings
     locspi = 1; % start 
     locspfL = length(importData{rec}.xL);  % end 
@@ -237,53 +283,76 @@ for rec = 1:num_recordings
     locspfR = length(importData{rec}.xR); 
     angle_nR = importData{rec}.rightAngle(locspi:locspfR); 
     tg_right_n = importData{rec}.rightForce(locspi:locspfR);
-    
+
     locsL = triggerLocsLeft{rec};
     tgleft_c = zeros(windows,size(locsL,1)-1);
     for i=1:size(locsL,1)-1
         tgleft_c(:,i) = interp1(xL(locsL(i):locsL(i+1)-1),tg_left_n(locsL(i):locsL(i+1)-1),...
-                        linspace(xL(locsL(i)),xL(locsL(i+1)-1),windows),'spline');
+                        linspace(xL(locsL(i)),xL(locsL(i+1)-1),windows),'linear');
     end
 
     locsR = triggerLocsRight{rec};
     tgright_c = zeros(windows,size(locsR,1)-1);
     for i=1:size(locsR,1)-1
        tgright_c(:,i) = interp1(xR(locsR(i):locsR(i+1)-1),tg_right_n(locsR(i):locsR(i+1)-1),...
-            linspace(xR(locsR(i)),xR(locsR(i+1)-1),windows),'spline');
+            linspace(xR(locsR(i)),xR(locsR(i+1)-1),windows),'linear');
     end
+    % importData{rec}.powerLeft = tgleft_c.*25.*(3.14./30).*0.155;
+    % importData{rec}.powerRight = tgright_c.*25.*(3.14./30).*0.155;
 
-    powerLeft= tgleft_c.*40.*(3.14./30).*0.155;
-    powerRight=tgright_c.*40.*(3.14./30).*0.155;
-
-    cyclicData{rec}.tgleft_c = tgleft_c; 
-    cyclicData{rec}.tgright_c = tgright_c; 
-
-    powerData{rec}.powerLeft = tgleft_c.*40.*(3.14./30).*0.155;
-    powerData{rec}.powerRight = tgright_c.*40.*(3.14./30).*0.155;
-    powerData{rec}.powerPerCycleLeft = sum(powerData{rec}.powerLeft)./length(powerData{rec}.powerLeft);
-    powerData{rec}.powerPerCycleRight = sum(powerData{rec}.powerRight)./length(powerData{rec}.powerRight);
+    cadence_rpm = 25; cadence_rps = cadence_rpm / 60;
+    importData{rec}.powerLeft = importData{rec}.interpolatedForceLeft.* cadence_rps .* 2 * pi * 0.165;
+    importData{rec}.powerRight = importData{rec}.interpolatedForceRight.* cadence_rps .* 2 * pi * 0.165;
+    % 
+    importData{rec}.powerPerCycleLeft = sum(importData{rec}.powerLeft)./length(importData{rec}.powerLeft);
+    importData{rec}.meanCyclePowerLeft = mean(importData{rec}.powerLeft,2);
+    importData{rec}.powerPerCycleRight = sum(importData{rec}.powerRight)./length(importData{rec}.powerRight);
 end 
 %% Plot Power Data 
 figure('Name', 'Power on left pedal')
 for rec = 2:num_recordings 
-    subplot(2,3,rec-1)
-    title ('Averaged power on left pedal'), grid on
-    plot(1:length(powerData{1}.powerPerCycleLeft),movmean(powerData{1}.powerPerCycleLeft, 30),'LineWidth',1.5, 'Color', colors{7}(4,:));
-    hold on, grid on
-    plot(movmean(powerData{rec}.powerPerCycleLeft, 30),'LineWidth',2, 'color', colors{2}(5,:));
+    subplot(3,2,rec-1)
+    % if rec == 1 subplot(4,2,rec-1);
+    % else subplot(4,2,rec); 
+    % end 
+    curve1=importData{1}.powerPerCycleLeft + std(importData{1}.powerPerCycleLeft,[],2);
+    curve2=importData{1}.powerPerCycleLeft - std(importData{1}.powerPerCycleLeft,[],2);
+    inBetween = [curve1'; flipud(curve2')]; xAxis = [(1:length(curve1))'; flipud((1:length(curve1))')];
+    fill(xAxis, movmean(inBetween,15), Yellow(1,:), 'LineStyle', 'none', 'FaceAlpha', 0.2); hold on
+    
+    curve1=importData{rec}.powerPerCycleLeft + std(importData{rec}.powerPerCycleLeft,[],2);
+    curve2=importData{rec}.powerPerCycleLeft - std(importData{rec}.powerPerCycleLeft,[],2);
+    inBetween = [curve1'; flipud(curve2')]; xAxis = [(1:length(curve1))'; flipud((1:length(curve1))')];
+    fill(xAxis, movmean(inBetween,15), Blue(2,:), 'LineStyle', 'none', 'FaceAlpha', 0.3);
+    
+    plot(1:length(importData{1}.powerPerCycleLeft),movmean(importData{1}.powerPerCycleLeft, 10),'LineWidth',1.5, 'Color', colors{7}(4,:));
+    plot(movmean(importData{rec}.powerPerCycleLeft, 10),'LineWidth',2, 'color', colors{2}(6,:));
     xlabel('Cycling revolutions'), ylabel('Power')
-    title("Passive vs "+titles_recs{rec}+" power"), legend('Passive', 'tSCS')
+    title("Passive vs "+titles_recs{rec}+" power"), legend('','','Passive', 'tSCS'), grid on
+    
 end 
+
 %%
 figure('Name', 'Power on right pedal')
 for rec = 2:num_recordings 
-    subplot(2,3,rec-1)
-    title ('Averaged power on left pedal'), grid on
-    plot(1:length(powerData{1}.powerPerCycleRight),movmean(powerData{1}.powerPerCycleRight, 30),'LineWidth',1.5, 'Color', colors{7}(4,:));
-    hold on, grid on
-    plot(movmean(powerData{rec}.powerPerCycleRight, 30),'LineWidth',2, 'color', colors{2}(5,:)');
+    subplot(3,2,rec-1)
+    % if rec == 1 subplot(4,2,rec-1); % per Cecere
+    % else subplot(4,2,rec); 
+    % end 
+    curve1=importData{1}.powerPerCycleRight + std(importData{1}.powerPerCycleRight,[],2);
+    curve2=importData{1}.powerPerCycleRight - std(importData{1}.powerPerCycleRight,[],2);
+    inBetween = [curve1'; flipud(curve2')]; xAxis = [(1:length(curve1))'; flipud((1:length(curve1))')];
+    fill(xAxis, movmean(inBetween,15), Yellow(1,:), 'LineStyle', 'none', 'FaceAlpha', 0.2); hold on
+    
+    curve1=importData{rec}.powerPerCycleRight + std(importData{rec}.powerPerCycleRight,[],2);
+    curve2=importData{rec}.powerPerCycleRight - std(importData{rec}.powerPerCycleRight,[],2);
+    inBetween = [curve1'; flipud(curve2')]; xAxis = [(1:length(curve1))'; flipud((1:length(curve1))')];
+    fill(xAxis, movmean(inBetween,15), Blue(2,:), 'LineStyle', 'none', 'FaceAlpha', 0.3); hold on
+    
+    plot(1:length(importData{1}.powerPerCycleRight),movmean(importData{1}.powerPerCycleRight, 10),'LineWidth',1.5, 'Color', colors{7}(4,:));
+    plot(movmean(importData{rec}.powerPerCycleRight, 10),'LineWidth',2, 'color', colors{2}(6,:)');
     xlabel('Cycling revolutions'), ylabel('Power')
-    title("Passive vs "+titles_recs{rec}+" power"), legend('Passive', 'tSCS')
+    title("Passive vs "+titles_recs{rec}+" power"), legend('','','Passive', 'tSCS'), grid on
 end 
 %% Boxplots of forces
 figure()
@@ -306,7 +375,7 @@ set(gca, 'XTick', 1:num_recordings, 'XTickLabel', titles_recs); xtickangle(45);
 %% Boxplots of powers
 figure()
 for rec = 1:num_recordings
-    trial_array = powerData{rec}.powerPerCycleLeft;
+    trial_array = importData{rec}.powerPerCycleLeft;
     boxplot(trial_array,'Positions', rec, 'Widths', 0.20, 'Colors', colors{rec}(5,:));
     hold on 
     title('Powers mediated - left pedal')
@@ -315,7 +384,7 @@ set(gca, 'XTick', 1:num_recordings, 'XTickLabel', titles_recs); xtickangle(45);
 %%
 figure()
 for rec = 1:num_recordings
-    trial_array = powerData{rec}.powerPerCycleRight;
+    trial_array = importData{rec}.powerPerCycleRight;
     boxplot(trial_array,'Positions', rec, 'Widths', 0.20, 'Colors', colors{2}(5,:));
     hold on 
     title('Powers mediated - right pedal')

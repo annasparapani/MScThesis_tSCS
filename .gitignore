@@ -123,3 +123,5 @@ codegen/
 octave-workspace
 #Matlab heavy files
 *.mat 
+#EMG acquisiton files (almost 3 gB) 
+*.Poly5 
