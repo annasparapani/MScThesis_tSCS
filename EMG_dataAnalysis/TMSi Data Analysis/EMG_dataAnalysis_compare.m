@@ -1,12 +1,17 @@
-%% Load data for multiple recordings
-% upload order: 50, 50 vol, 80, 80 vol, 20, 20 vol, passive
+%% EMG ANALYSIS to compare muscle activation under tSCS 
+% Anna Sparapani - March 2024
+% EMG data analysis for tSCS + pedalling setup - data was acquired on a
+% TMSI SAGA REV 2+ with 16 unipolar channels on 8 muscles (QUAD, HAMS, GAST
+% and TA on each leg) during 6 cycling conditions on trike, on SCI subjects
+% the 6 conditions, which are compared in the script, are: 
+% tSCS 50/80/20Hz, tSCS 50/80/20 + voluntary effort for movement
 clear all
 close all
 clc
 num_recordings = 7; % Define the number of recordings
 
-%% 
-% Get file names for multiple recordings
+%% Import files  
+% upload order: 20, 20 vol, 50, 50 vol, 80, 80 vol, passive
 currpath = pwd;
 data_struct = cell(num_recordings,1); % Initialize cell array to store data
 
@@ -57,10 +62,9 @@ clear recording_data time Emg_Signal data_mot_emg rawData prompt dlgtitle dims b
 plots_on = 1;
 fs=2000;
 % francesca : titles_recs = {'50Hz', '80Hz', '20 Hz', 'passive'}
-titles_recs={'50Hz', '50Hz + vol','80Hz', '80Hz + vol', '20Hz', '20Hz + vol','passive', 'passive + vol', 'passive + vol finale'}; 
-titles_muscles={'QUAD Dx mono','HAMS Dx mono', 'GAST Dx mono', 'TA Dx mono',...
-    'QUAD Sx mono','HAMS Sx mono', 'GAST Sx mono', 'TA Sx mono',...
-    'Trigger','QUAD Dx bip',};
+titles_recs={'20Hz', '20Hz + vol','50Hz', '50Hz + vol','80Hz', '80Hz + vol','passive', 'passive + vol', 'passive + vol finale'}; 
+titles_muscles={'QUAD RIGHT','HAMS RIGHT', 'GAST RIGHT', 'TA RIGHT',...
+    'QUAD LEFT','HAMS LEFT', 'GAST LEFT', 'TA LEFT', 'Trigger','QUAD RIGHT bip'};
 
 Pink = [245, 235, 235; 244, 217, 229; 230, 176 201; 222, 140, 174; ...
     215, 98, 147; 206, 150, 160; 191, 97, 126; 207, 65, 119; 178, 46, 92; ...
@@ -96,7 +100,7 @@ for rec=1:num_recordings
         filteredHighPass(j,:)=filtfilt(b, a, rawData(j,:)); 
     end
     
-    filteredBandPass = []; filterOrder = 3; filterFreq = 750; % Butterworth 3 ordine LP @750Hz
+    filteredBandPass = []; filterOrder = 5; filterFreq = 500; % Butterworth 3 ordine LP @750Hz
     [b, a] = butter(filterOrder, filterFreq/(fs/2), 'low'); 
     for j = 1:size(rawData,1)
         filteredBandPass(j,:)=filtfilt(b, a, filteredHighPass(j,:)); 
@@ -176,7 +180,7 @@ for rec=1:(num_recordings)
 end 
 clear noArtData MinPeakHeight MinPeakDistance
 
-%% Per acquisizione 13.02 Samuele - rimozione picco in passivo 
+%% Per acquisizione (SUB02P01) - rimozione picco in passivo 
 % figure(); 
 % for i = 1:8 % per tutti e otto i canali 
 %     noArtData = data_struct{7}.filteredData(i,:);
@@ -220,7 +224,7 @@ end
 
 %% Envelope
 for rec=1:num_recordings
-    envelopeData=[];filterFreq = 50; filterOrder = 5; % Low-pass filtering 100 Hz, 5 order
+    envelopeData=[];filterFreq = 10; filterOrder = 5; % Low-pass filtering 100 Hz, 5 order
     [B, A] = butter(filterOrder, filterFreq/(fs/2), 'low'); 
     for i=1:size(data_struct{rec}.rectData,1)
         envelopeData(i,:) = filtfilt(B, A, data_struct{rec}.rectData(i,:)); 
@@ -245,7 +249,7 @@ clear filterFreq filterOrder A B
 triggerLocsAll = cell(num_recordings,1);
 smoothedDataAll = cell(num_recordings,1);
 figure; plot(data_struct{rec}.rawData(9,:), 'b'); % Plot raw data
-%%
+%% set sign of trigger
 for rec = 1:num_recordings
     % add later trigger on if data_struct{rec}.
     [cycle_pks,cycle_locs]=findpeaks(-data_struct{rec}.rawData(9,:),"MinPeakDistance",1000,"MinPeakHeight",10000); 
@@ -277,49 +281,8 @@ for i=1:8
         ylabel("EMG Amplitude [µV]"); xlabel("Time (s)")
         hold on
     end 
-    legend('50 Hz', '50Hz + vol', '80 Hz', '80Hz + vol', '20 Hz', '20Hz + vol', 'passive', 'passive + vol', 'passive + vol finale');
+    legend(titles_recs)
 end 
-
-%% Table to compare mean activations
-meanActivations = cell(num_recordings,1);
-for rec=1:num_recordings
-    meanActivations{rec} = mean(data_struct{rec}.envelopeData,2);
-end
-
-for rec=1:num_recordings-1
-    meanActivations{rec} = meanActivations{rec}-meanActivations{7} ;
-end
-
-column_names={'Muscle', '50Hz','50 Hz + vol', '80Hz', '80Hz+vol','20Hz',...
-    '20Hz+vol', 'Passive Cyling'};
-Tmean = table(titles_muscles(1:8)', meanActivations{1}, meanActivations{2}, ...
-    meanActivations{3}, meanActivations{4}, meanActivations{5}, meanActivations{6}, ...
-    meanActivations{7}, 'VariableNames', column_names)
-
-% variance computation and table
-varActivations = cell(num_recordings,1);
-for rec=1:num_recordings
-    varActivations{rec} = var(data_struct{rec}.envelopeData,0,2);
-end
-
-column_names={'Muscle', '50Hz','50 Hz + vol', '80Hz', '80Hz+vol','20Hz',...
-    '20Hz+vol', 'Passive Cyling'};
-Tvar = table(titles_muscles(1:8)', varActivations{1}, varActivations{2}, ...
-    varActivations{3}, varActivations{4}, varActivations{5}, varActivations{6}, ...
-    varActivations{7}, 'VariableNames', column_names)
-
-% %% boxplots to compare mean activations
-% for i=1:8 % iterate for all muscles
-%     figure('Name', titles_muscles{i}); 
-%     for rec=1:num_recordings
-%         x_pos = rec; 
-%         boxplot(data_struct{rec}.envelopeData(i,:), 'Positions', x_pos, 'Widths', 0.15);
-%         hold on
-%     end
-%     title(titles_muscles(i));
-%     legend('50Hz', '50Hz + vol','80Hz', '80Hz + vol', '20Hz', '20Hz + vol','passive')
-% end 
-
 
 %% Cycling segmentation
 for rec=1:num_recordings
@@ -374,7 +337,7 @@ end
 clear averagedCycles currentMuscle allCycles interpolatedSegmentedData cycleLength
    
 %% Averaged cycles plots - separated
-movmeanVal = 250;
+movmeanVal = 1;
 for i = 1:8
     figure('Name', titles_muscles{i})
     for rec = 1:4
@@ -382,7 +345,7 @@ for i = 1:8
         % per sano: timecycle=linspace(0, size(data_struct{rec}.averagedCycle,2)/fs, size(data_struct{rec}.averagedCycle,2));
 
         if rec == 4 % passive with bolder line
-           plot(timecycle,movmean(data_struct{2*rec-1}.averagedCycle(i,:),movmeanVal), 'k--','LineWidth',1.5), 
+           plot(timecycle,movmean(data_struct{2*rec-1}.averagedCycle(i,:),movmeanVal), 'color',Yellow(3,:), 'LineStyle', '-.', 'LineWidth', 2.5), 
            % per cecere: 
            % timecycle=linspace(0, size(data_struct{2*rec}.averagedCycle,2)/fs, size(data_struct{2*rec}.averagedCycle,2));
            % subplot(3,3,i), plot(timecycle,movmean(data_struct{2*rec}.averagedCycle(i,:),movmeanVal), 'k--','LineWidth',0.8), 
@@ -408,52 +371,181 @@ end
 
 %% Averaged cycles plots - on same fig
 figure()
-movmeanVal=250;
-for i = 1:8 
-    %figure('Name', titles_muscles{i})
+movmeanVal=10;
+% plotting standard deviation shades
+for i = 1:8
     for rec = 1:4
-        timecycle=linspace(0, size(data_struct{2*rec-1}.averagedCycle,2)/fs, size(data_struct{2*rec-1}.averagedCycle,2));
-        % per sano: timecycle=linspace(0, size(data_struct{rec}.averagedCycle,2)/fs, size(data_struct{rec}.averagedCycle,2));
-
+        angles = linspace(0, 360, size(data_struct{2*rec-1}.averagedCycle, 2));
+        subplot(2,4,i)
         if rec == 4 % passive with bolder line
-           subplot(3,3,i), plot(timecycle,movmean(data_struct{2*rec-1}.averagedCycle(i,:),movmeanVal), 'k','LineWidth',1.5), 
-          
+           curve1=data_struct{2*rec-1}.averagedCycle(i,:)+ std(data_struct{2*rec-1}.averagedCycle(i,:)) ;
+           curve2=data_struct{2*rec-1}.averagedCycle(i,:) - std(data_struct{2*rec-1}.averagedCycle(i,:));
+           inBetween = [curve1'; flipud(curve2')]; 
+           xAxis = [angles'; flipud(angles')];
+           fill(xAxis, movmean(inBetween,20), colors{rec}(2,:), 'LineStyle', 'none', 'FaceAlpha', 0.2);
+           hold on    
+        else 
+            curve1=data_struct{2*rec-1}.averagedCycle(i,:)+ std(data_struct{2*rec-1}.averagedCycle(i,:)) ;
+            curve2=data_struct{2*rec-1}.averagedCycle(i,:) - std(data_struct{2*rec-1}.averagedCycle(i,:));
+            inBetween = [curve1'; flipud(curve2')]; 
+            xAxis = [angles'; flipud(angles')];
+            fill(xAxis, movmean(inBetween,20), colors{rec}(2,:), 'LineStyle', 'none', 'FaceAlpha', 0.4);
+            hold on
+
+            angles = linspace(0, 360, size(data_struct{2*rec}.averagedCycle,2));
+            subplot(2,4,i)
+            curve1=data_struct{2*rec}.averagedCycle(i,:)+ std(data_struct{2*rec}.averagedCycle(i,:)) ;
+            curve2=data_struct{2*rec}.averagedCycle(i,:) - std(data_struct{2*rec}.averagedCycle(i,:));
+            inBetween = [curve1'; flipud(curve2')]; 
+            xAxis = [angles'; flipud(angles')];
+            fill(xAxis, movmean(inBetween,20), colors{rec}(2,:), 'LineStyle', 'none', 'FaceAlpha', 0.3);
+        end 
+    end
+end 
+% plotting mean EMG 
+for i = 1:8 
+    for rec = 1:4
+        angles = linspace(0, 360, size(data_struct{2*rec-1}.averagedCycle, 2));
+        % timecycle=linspace(0, size(data_struct{2*rec-1}.averagedCycle,2)/fs, size(data_struct{2*rec-1}.averagedCycle,2));
+        % per sano: timecycle=linspace(0, size(data_struct{rec}.averagedCycle,2)/fs, size(data_struct{rec}.averagedCycle,2));
+        subplot(2,4,i)  
+        if rec == 4 % passive with bolder line
+           subplot(2,4,i), plot(angles,movmean(data_struct{2*rec-1}.averagedCycle(i,:),movmeanVal), 'color', Yellow(4,:),'LineWidth',2), 
            % per cecere: 
            % timecycle=linspace(0, size(data_struct{2*rec}.averagedCycle,2)/fs, size(data_struct{2*rec}.averagedCycle,2));
            % subplot(3,3,i), plot(timecycle,movmean(data_struct{2*rec}.averagedCycle(i,:),movmeanVal), 'k--','LineWidth',0.8), 
            % timecycle=linspace(0, size(data_struct{2*rec+1}.averagedCycle,2)/fs, size(data_struct{2*rec+1}.averagedCycle,2));
            % subplot(3,3,i), plot(timecycle,movmean(data_struct{2*rec+1}.averagedCycle(i,:),movmeanVal), 'k-.','LineWidth',0.8), 
-           % 
-           xlabel('time(s)'), ylabel('EMG (µV)'); 
         else 
-            subplot(3,3,i), plot(timecycle,movmean(data_struct{2*rec-1}.averagedCycle(i,:),movmeanVal), 'LineWidth', 1.5 , 'color',colors{rec}(3,:)), 
+            subplot(2,4,i), plot(angles,movmean(data_struct{2*rec-1}.averagedCycle(i,:),movmeanVal), 'LineWidth', 2 , 'color',colors{rec}(5,:), 'LineStyle','-.'), hold on; 
             %per sano: subplot(3,3,i), plot(timecycle,movmean(data_struct{rec}.averagedCycle(i,:),movmeanVal), 'LineWidth', 1.5 , 'color',colors{rec}(6,:)), 
 
-            hold on 
-            timecycle=linspace(0, size(data_struct{2*rec}.averagedCycle,2)/fs, size(data_struct{2*rec}.averagedCycle,2));
-            subplot(3,3,i), plot(timecycle,movmean(data_struct{2*rec}.averagedCycle(i,:),movmeanVal), 'LineWidth',1, 'color', colors{rec}(6,:))
-            xlabel('time(s)'), ylabel('EMG (µV)');
+            %timecycle=linspace(0, size(data_struct{2*rec}.averagedCycle,2)/fs, size(data_struct{2*rec}.averagedCycle,2));
+            angles = linspace(0, 360, size(data_struct{2*rec}.averagedCycle,2));
+            subplot(2,4,i), plot(angles,movmean(data_struct{2*rec}.averagedCycle(i,:),movmeanVal), 'LineWidth',2, 'color', colors{rec}(5,:))
         end 
-        title(titles_muscles(i))
-    end 
+    end
+    xlabel('Crank Angle (°)', 'FontSize', 14), ylabel('EMG (µV)','FontSize', 14);
+    title(titles_muscles(i)), xlim([0,360]), set(gca, 'FontSize', 14);
     hold off
 end 
-
+%% Print Legend
+figure()
 for i=1:4
     if i >= 4
-        if i == 5 subplot(3,3,9), plot(0,0, 'color','k', 'LineWidth', 2, 'LineStyle', '--'); hold on
+        if i == 5 plot(0,0, 'color','k', 'LineWidth', 2, 'LineStyle', '--'); hold on
         elseif i == 4
-            subplot(3,3,9), plot(0,0, 'color','k', 'LineWidth', 2 ); hold on 
+            plot(0,0, 'color',Yellow(3, :), 'LineWidth', 2 ); hold on 
         elseif i==6
-            subplot(3,3,9), plot(0,0, 'color','k', 'LineWidth', 2, 'LineStyle', '-.' ); hold on 
+           plot(0,0, 'color','k', 'LineWidth', 2, 'LineStyle', '-.' ); hold on 
         end 
     else
-        subplot(3,3,9), plot(0,0, 'color',colors{i}(3,:), 'LineWidth', 2 ); hold on 
+        plot(0,0, 'color',colors{i}(3,:), 'LineWidth', 2,'LineStyle', '-.' ); hold on 
+        plot(0,0, 'color', colors{i}(5,:),'LineWidth',2), 
+    end
+    title("legend"); 
+    h=legend(titles_recs); set(h,'FontSize',14);
+end 
+
+%% RMS errorplot on all cycles 
+for muscle = 1:8
+    for rec = 1:num_recordings
+        for i = 1:size(data_struct{rec}.interpolatedSegmentedData,2)
+            data_struct{rec}.rmsAllCycles(muscle, i) = rms(data_struct{rec}.interpolatedSegmentedData{muscle,i}); 
+        end
+    end 
+end
+figure(); 
+for muscle = 1:8 
+    subplot(2,4,muscle);
+    for rec = 1:num_recordings
+        if rec == 1 color = colors{1}; 
+            else if rec == 3 color = colors{2}; 
+                else if rec == 5 color = colors{3};
+                else if rec==7 color = Yellow; 
+                    end 
+                end
+            end 
+        end
+        if rem(rec,2)==0
+        errorbar(rec, mean(data_struct{rec}.rmsAllCycles(muscle,:)),std(data_struct{rec}.rmsAllCycles(muscle,:)), ...
+            'o', 'MarkerSize',15, 'MarkerFaceColor', color(2,:), 'LineWidth', 1.5, 'color', color(5,:)); hold on;
+        else if rec == 1 
+            errorbar(rec, mean(data_struct{rec}.rmsAllCycles(muscle,:)),std(data_struct{rec}.rmsAllCycles(muscle,:)), ...
+            'o', 'MarkerSize', 15, 'LineWidth', 1.5, 'color', color(5,:)); hold on; 
+            else if rec > 1
+                errorbar(rec, mean(data_struct{rec}.rmsAllCycles(muscle,:)),std(data_struct{rec}.rmsAllCycles(muscle,:)), ...
+                'o', 'MarkerSize', 15, 'LineWidth', 1.5, 'color', color(5,:), 'LineStyle', '--'); hold on;
+            end 
+        end 
+    end
+    end 
+    title(titles_muscles(muscle), 'FontSize',8); grid on;ylabel('RMS EMG [µV]'), xlim([0,8]),
+    set(gca, 'XTick', 1:num_recordings, 'XTickLabel', titles_recs, 'FontSize', 16); xtickangle(45);
+    
+end 
+sgtitle('RMS of EMG during cycling', 'FontSize', 22);
+
+%% Normalized average cycle
+for muscle = 1:8
+    maxVal = 0;
+    for rec = 1:num_recordings
+        maxVal = max(maxVal, max(data_struct{rec}.averagedCycle(muscle,:)));
+    end
+    
+    for rec = 1:num_recordings
+        data_struct{rec}.avgCycleNorm(muscle, :) = data_struct{rec}.averagedCycle(muscle,:) / maxVal;
+    end
+end
+%%
+figure()
+movmeanVal=200;
+for i = 1:8
+    for rec = 1:4
+        %timecycle=linspace(0, size(data_struct{2*rec-1}.avgCycleNorm,2)/fs, size(data_struct{2*rec-1}.averagedCycle,2));
+        angles = linspace(0, 360, size(data_struct{2 * rec - 1}.avgCycleNorm, 2));
+        % per sano: angles = linspace(0, 360, size(data_struct{rec}.avgCycleNorm, 2));
+
+        if rec == 4 % passive with bolder line
+           subplot(2,4,i), plot(angles,movmean(data_struct{2*rec-1}.avgCycleNorm(i,:),movmeanVal), 'color',Yellow(4,:),'LineWidth',1.5), 
+          % per sano:subplot(2,4,i), plot(angles,movmean(data_struct{rec}.avgCycleNorm(i,:),movmeanVal), 'color',Yellow(4,:),'LineWidth',1.5), hold on
+           % per cecere: 
+           % timecycle=linspace(0, size(data_struct{2*rec}.avgCycleNorm,2)/fs, size(data_struct{2*rec}.avgCycleNorm,2));
+           % subplot(3,3,i), plot(timecycle,movmean(data_struct{2*rec}.avgCycleNorm(i,:),movmeanVal), 'k--','LineWidth',0.8), 
+           % timecycle=linspace(0, size(data_struct{2*rec+1}.avgCycleNorm,2)/fs, size(data_struct{2*rec+1}.avgCycleNorm,2));
+           % subplot(3,3,i), plot(timecycle,movmean(data_struct{2*rec+1}.avgCycleNorm(i,:),movmeanVal), 'k-.','LineWidth',0.8), 
+        else 
+            subplot(2,4,i), plot(angles,movmean(data_struct{2*rec-1}.avgCycleNorm(i,:),movmeanVal), 'LineWidth', 2 , 'color',colors{rec}(3,:)), 
+            %per sano: subplot(2,4,i), plot(angles,movmean(data_struct{rec}.avgCycleNorm(i,:),movmeanVal), 'LineWidth', 1.5 , 'color',colors{rec}(6,:)), 
+            hold on 
+            %timecycle=linspace(0, size(data_struct{2*rec}.avgCycleNorm,2)/fs, size(data_struct{2*rec}.avgCycleNorm,2));
+            angles = linspace(0, 360, size(data_struct{2 * rec}.avgCycleNorm, 2));
+            subplot(2,4,i), plot(angles,movmean(data_struct{2*rec}.avgCycleNorm(i,:),movmeanVal), 'LineWidth',1.5, 'color', colors{rec}(6,:))
+        end
+    end 
+    xlabel('Angle (°)','FontSize', 24), ylabel('EMG amplitude', 'FontSize',22), ylim([0,1]); xlim([0,360]);
+    sgtitle('Normalized EMG during an averaged cycling revolution', 'FontSize', 24)
+    title(titles_muscles(i), 'FontSize',18); set(gca, 'FontSize', 14); yticks(0:0.2:1); grid on;
+end 
+%% Print Legend  
+figure()
+for i=1:4
+    if i >= 4
+        if i == 5 plot(0,0, 'color','k', 'LineWidth', 2, 'LineStyle', '--'); hold on
+        elseif i == 4
+            plot(0,0, 'color',Yellow(3,:), 'LineWidth', 2 ); hold on 
+        elseif i==6
+            plot(0,0, 'color','k', 'LineWidth', 2, 'LineStyle', '-.' ); hold on 
+        end 
+    else
+        plot(0,0, 'color',colors{i}(3,:), 'LineWidth', 2 ); hold on 
         plot(0,0, 'color', colors{i}(5,:),'LineWidth',1), 
     end
     title("legend"); 
     h=legend(titles_recs); set(h,'FontSize',14);
 end 
+
+
 %% UNUSED Code
 % average cycle without interpolation to mean cycle length
 % for rec = 1:num_recordings  
@@ -472,3 +564,91 @@ end
 %    data_struct{rec}.averagedCycle = averagedCycles; 
 %    clear currentMuscle averagedCycles allCycles cycleLength
 % end
+
+% %% boxplots to compare mean activations
+% for i=1:8 % iterate for all muscles
+%     figure('Name', titles_muscles{i}); 
+%     for rec=1:num_recordings
+%         x_pos = rec; 
+%         boxplot(data_struct{rec}.envelopeData(i,:), 'Positions', x_pos, 'Widths', 0.15);
+%         hold on
+%     end
+%     title(titles_muscles(i));
+%     legend('50Hz', '50Hz + vol','80Hz', '80Hz + vol', '20Hz', '20Hz + vol','passive')
+% end 
+
+% %% RMS, mean and variance computation on AVERAGE CYCLE
+% for rec=1:num_recordings
+%     data_struct{rec}.meanAvgCycleEMG= mean(data_struct{rec}.averagedCycle,2);
+%     data_struct{rec}.rmsAvgCycleEMG = rms(data_struct{rec}.averagedCycle,2);
+%     data_struct{rec}.varAvgCycleEMG= var(data_struct{rec}.averagedCycle,0,2);
+% end
+% 
+% column_names={'Muscle', '50Hz','50 Hz + vol', '80Hz', '80Hz+vol','20Hz',...
+%     '20Hz+vol', 'Passive Cyling'};
+% 
+% % Trms = table(titles_muscles(1:8)', data_struct{1}.rmsEMG, data_struct{2}.rmsEMG, ...
+% %     data_struct{3}.rmsEMG, data_struct{4}.rmsEMG, data_struct{5}.rmsEMG, data_struct{6}.rmsEMG, ...
+% %     data_struct{7}.rmsEMG, 'VariableNames', column_names)
+% %% RMS on average cyclebar plots 
+% for i = 1:8
+%     for rec = 1:num_recordings
+%         rms(i,rec) = data_struct{rec}.rmsAvgCycleEMG(i);
+%     end 
+% end
+% figure();
+% for muscle = 1:8
+%     muscle_rms = rms(muscle, :);
+%     subplot(2, 4, muscle);
+%     for rec = 1:4
+%         if rec == 4
+%             bar(2*rec-1, muscle_rms(2*rec-1), 'FaceColor', [.7 .7 .7], 'EdgeColor', 'none'); hold on
+%         else 
+%             bar(2*rec-1, muscle_rms(2*rec-1), 'FaceColor', colors{rec}(3, :), 'EdgeColor', 'none'); hold on
+%             bar(2*rec, muscle_rms(2*rec), 'FaceColor', colors{rec}(5, :), 'EdgeColor', 'none');
+%         end
+%     end
+%     ylabel('RMS Value'); title(titles_muscles(muscle), 'FontSize',16); 
+%     set(gca, 'XTick', 1:num_recordings, 'XTickLabel', titles_recs, 'FontSize', 14); xtickangle(45);
+%     xlim([0.5 7.5]), %ylim([0 20])
+% end
+% sgtitle('RMS Values for EMG Acquisitions in Different Muscles during a mean cycle', 'FontSize', 20);
+
+% %% RMS, mean and variance computation
+% for rec=1:num_recordings
+%     data_struct{rec}.meanEMG= mean(data_struct{rec}.envelopeData,2);
+%     data_struct{rec}.rmsEMG = rms(data_struct{rec}.envelopeData,2);
+%     data_struct{rec}.varEMG= var(data_struct{rec}.envelopeData,0,2);
+% end
+% 
+% column_names={'Muscle', '50Hz','50 Hz + vol', '80Hz', '80Hz+vol','20Hz',...
+%     '20Hz+vol', 'Passive Cyling'};
+
+% Trms = table(titles_muscles(1:8)', data_struct{1}.rmsEMG, data_struct{2}.rmsEMG, ...
+%     data_struct{3}.rmsEMG, data_struct{4}.rmsEMG, data_struct{5}.rmsEMG, data_struct{6}.rmsEMG, ...
+%     data_struct{7}.rmsEMG, 'VariableNames', column_names)
+% %% RMS bar plots on mean cycle
+% for i = 1:8
+%     for rec = 1:num_recordings
+%         rms(i,rec) = data_struct{rec}.rmsEMG(i);
+%     end 
+% end
+% figure();
+% for muscle = 1:8
+%     muscle_rms = rms(muscle, :);
+%     subplot(2, 4, muscle);
+%     for rec = 1:4
+%         if rec == 4
+%            %per sano: bar(rec, muscle_rms(rec), 'FaceColor', Yellow(2,:),'FaceAlpha',0.7,'EdgeColor', 'none'); hold on
+%            bar(2*rec-1, muscle_rms(2*rec-1), 'FaceColor', Yellow(2,:),'FaceAlpha',0.6, 'EdgeColor', 'none'); hold on
+%         else 
+%             %per sano: bar(rec, muscle_rms(rec), 'FaceColor', colors{rec}(3, :), 'EdgeColor', 'none'); hold on
+%             bar(2*rec-1, muscle_rms(2*rec-1), 'FaceColor', colors{rec}(3, :), 'EdgeColor', 'none'); hold on
+%             bar(2*rec, muscle_rms(2*rec), 'FaceColor', colors{rec}(5, :), 'EdgeColor', 'none');
+%         end
+%     end
+%     ylabel('RMS Value'); title(titles_muscles(muscle), 'FontSize',16); 
+%     set(gca, 'XTick', 1:num_recordings, 'XTickLabel', titles_recs, 'FontSize', 14); xtickangle(45);
+%     xlim([0.5 7.5]), %ylim([0 20])
+% end
+% sgtitle('RMS Values for EMG Acquisitions in Different Muscles', 'FontSize', 20);

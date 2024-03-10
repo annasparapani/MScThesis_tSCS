@@ -1,11 +1,12 @@
 %% HEALTHY SUB ANALYSIS
 % data acquired on the non motorized trike from a healthy subject
 % import dataSano.mat from MScThesis_tSCS_gitHub/EMG_dataAnalysis/TMSi Data Analysis/Dati
+clear all 
+close all
 plots_on=1;
 fs=2000;
 titles_muscles={'QUAD SX', 'HAMS SX', 'QUAD DX', 'HAMS DX'}; 
-%% Filtering 
-    
+%% Filtering  
     rawData=dataS2.samples;
     % spectrumRaw=[]; figi ure("Name","Spectrum Raw"); % print raw spectrum
     % for i=1:size(rawData,1)
@@ -43,14 +44,13 @@ titles_muscles={'QUAD SX', 'HAMS SX', 'QUAD DX', 'HAMS DX'};
     % end 
     
     if plots_on % plot time course of filtered data
-        for i=2:size(dataS2.noOffData,1)
+        for i=2:size(dataS2.samples,1)
             subplot(2,2,i-1), plot(filteredData(i,:)), ylabel('µV'),xlabel('time(s)'), title(titles_muscles(i-1));
         end 
     end
     dataS2.filteredData=filteredData;
 
     %% Offset removal and rectification
-
     noOffData=dataS2.filteredData;   
     noOffData = noOffData - mean(noOffData,2); 
     dataS2.noOffData = noOffData;  
@@ -61,7 +61,6 @@ titles_muscles={'QUAD SX', 'HAMS SX', 'QUAD DX', 'HAMS DX'};
             subplot(2,2,i-1), plot(dataS2.noOffData(i,:)), ylabel('µV'),xlabel('time(s)'), title(titles_muscles(i-1)+" no offset");
         end 
     end
-
     dataS2.rectData=abs(dataS2.noOffData);
     if plots_on
         figure('Name','Data Rectified')
@@ -103,7 +102,7 @@ titles_muscles={'QUAD SX', 'HAMS SX', 'QUAD DX', 'HAMS DX'};
             segmentedData{j,i}=dataS2.envelopeData(j+1, cycle_locs(i):(cycle_locs(i+1)-1));
         end 
     end 
-    dataS2.segmentedData=segmentedData{:,:}; 
+    dataS2.segmentedData=segmentedData; 
 
     %%  Average cycling revolution
     % interpolate data to have the same number of cycles in each segment  

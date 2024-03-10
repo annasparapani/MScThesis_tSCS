@@ -22,10 +22,12 @@ colors{1} = Pink; colors{2} = Blue; colors{3} = Green; colors{4} = Yellow;
 colors{5} = Orange; colors{6} = Black; colors{7} = Red; 
 
 num_recordings = 7; % Change this to the number of acquisitions you have
-titles_recs={'passive', '50Hz+vol', '50Hz','80Hz+vol', '80Hz', '20Hz + vol', '20Hz'};
+%titles_recs={'passive', '20Hz + vol', '20Hz','50Hz + vol', '50Hz','80Hz + vol', '80Hz'};
+titles_recs={'passive','passive+vol', 'passive+vol final', '50Hz+vol', '50Hz','80Hz+vol', '80Hz', '20Hz + vol', '20Hz'};
+
 
 %% Load data for left pedal
-% loading order = passive, 50 vol, 50, 80 vol, 80, 20 vol, 20
+% loading order = passive, 20 vol, 20, 50 vol, 50, 80 vol, 80
 importData = cell(num_recordings, 1); % Store acquisitions in a cell array
 for rec = 1:num_recordings
     % Load data for each acquisition
@@ -44,6 +46,7 @@ end
 
 %% Load data for right pedal
 for rec = 1:num_recordings
+
     % Load data for each acquisition
     [filename, path, ~] = uigetfile('*.csv', ['Pick a csv file to import for LEFT pedal ', num2str(rec)]);
     full_filename = fullfile(path, filename);
@@ -57,7 +60,7 @@ for rec = 1:num_recordings
     importData{rec}.rightAngle = angle;
     importData{rec}.xR = 1:size(data, 1);
 end
-clear data force angle 
+% clear data force angle 
 %% Plot data
 %Left
 triggerLocsLeft = cell(num_recordings,1);
@@ -88,7 +91,7 @@ end
 legend('Passive', 'Passive MA','50Hz + vol', '50Hz + vol MA', '50Hz', ...
     '50Hz MA','80Hz + vol','80Hz + vol MA', '80Hz','80Hz MA',...
      '20Hz + vol','20Hz + vol MA','20Hz', '20Hz MA');
-%%
+
 %Right
 triggerLocsRight = cell(num_recordings,1);
 for rec = 1:num_recordings
@@ -119,7 +122,7 @@ end
 legend('Passive', 'Passive MA','50Hz + vol', '50Hz + vol MA', '50Hz', ...
     '50Hz MA','80Hz + vol','80Hz + vol MA', '80Hz','80Hz MA',...
      '20Hz + vol','20Hz + vol MA','20Hz', '20Hz MA');
-%% per acquisizione Cecere 28.02 - picco forze durante 80 + vol 
+%% Rimozione picchi dati da disconnessione pedali
 figure();
 % right angle
 for rec = 1:num_recordings
@@ -146,7 +149,7 @@ for rec = 1:num_recordings
     end
     plot(importData{rec}.leftAngle); hold on;
 end
-%%
+
 % left force
 figure();
 for rec = 1:num_recordings
@@ -175,9 +178,9 @@ for rec = 1:num_recordings
     plot(importData{rec}.rightForce); hold on;
 end
 
-%% Interpolation
+%% Forces Interpolation Left Pedal
 for rec=1:num_recordings
-    [pks_left,locs_left] = findpeaks(importData{rec}.leftAngle, 'MinPeakHeight', 200);
+    [pks_right,locs_left] = findpeaks(importData{rec}.leftAngle, 'MinPeakHeight', 200);
     num_samples_per_cycle = 360;
     % Preallocate an array to store interpolated force data for each cycle
     interpolated_force_cycles = zeros(num_samples_per_cycle, numel(locs_left)-1);
@@ -195,36 +198,76 @@ for rec=1:num_recordings
     importData{rec}.interpolatedForceLeft = interpolated_force_cycles;
     importData{rec}.meanCycleForceLeft = mean(importData{rec}.interpolatedForceLeft,2);
     importData{rec}.stddevCycleForceLeft = std(importData{rec}.interpolatedForceLeft,[],2);
-    importData{rec}.differentalForceLeft = importData{rec}.meanCycleForceLeft - importData{1}.meanCycleForceLeft;
-
+    importData{rec}.differentialForceLeft = importData{rec}.meanCycleForceLeft - importData{1}.meanCycleForceLeft;
+    importData{rec}.stddevDifferentialForceLeft = std(importData{rec}.differentialForceLeft);
 end 
-
 figure('Name', 'Force during an averaged cycle - left pedal'); 
-for rec = 2:num_recordings
-    subplot(3,2,rec-1) 
+for rec = 2:2:num_recordings
+    if rec == 2 color = colors{1}; 
+        else if rec == 4 color = colors{2}; 
+            else if rec == 6 color = colors{3};
+            end 
+        end 
+    end
     % if rec == 1 subplot(4,2,rec-1); % per Cecere
     % else subplot(4,2,rec); 
     % end 
+    subplot(3,2,rec-1) 
+
+    % plot passive std dev
     curve1=importData{1}.meanCycleForceLeft + importData{1}.stddevCycleForceLeft ;
     curve2=importData{1}.meanCycleForceLeft - importData{1}.stddevCycleForceLeft ;
     inBetween = [curve1; flipud(curve2)]; xAxis = [(1:360)'; flipud((1:360)')];
-    fill(xAxis, inBetween, Yellow(1,:), 'LineStyle', 'none', 'FaceAlpha', 0.3);
-    hold on
+    fill(xAxis, inBetween, Yellow(1,:), 'LineStyle', 'none', 'FaceAlpha', 0.3);hold on
+    
+    % plot tSCS + vol std dev
     curve1=importData{rec}.meanCycleForceLeft+ importData{rec}.stddevCycleForceLeft ;
     curve2=importData{rec}.meanCycleForceLeft - importData{rec}.stddevCycleForceLeft ;
     inBetween = [curve1; flipud(curve2)]; xAxis = [(1:360)'; flipud((1:360)')];
+    fill(xAxis, inBetween, color(2,:),'LineStyle', 'none', 'FaceAlpha', 0.5);
     
-    fill(xAxis, inBetween, Blue(2,:), 'LineStyle', 'none', 'FaceAlpha', 0.5);
-    plot(1:360,importData{1}.meanCycleForceLeft,'LineWidth',1.5, 'color', colors{7}(4, :)); hold on
-    plot(1:360,importData{rec}.meanCycleForceLeft,'LineWidth', 2, 'color', colors{2}(5, :));
-    plot(1:360, importData{1}.differentalForceLeft, 'LineWidth',0.5, 'color',colors{7}(7, :))
-    plot(1:360, importData{rec}.differentalForceLeft, 'LineWidth',1.5,'color', colors{2}(4, :))
-    grid on, xlim([0,360]), title("Passive vs "+titles_recs{rec}+" force")
+    % plotd tSCS std dev
+    curve1=importData{rec+1}.meanCycleForceLeft+ importData{rec}.stddevCycleForceLeft ;
+    curve2=importData{rec+1}.meanCycleForceLeft - importData{rec}.stddevCycleForceLeft ;
+    inBetween = [curve1; flipud(curve2)]; xAxis = [(1:360)'; flipud((1:360)')];
+    fill(xAxis, inBetween, color(2,:),'LineStyle', 'none', 'FaceAlpha', 0.5);
+    
+    % plot lines 
+    plot(1:360,importData{1}.meanCycleForceLeft,'LineWidth',1.5, 'color', Yellow(4, :));
+    plot(1:360,importData{rec}.meanCycleForceLeft,'LineWidth', 2, 'color', color(5, :));   
+    plot(1:360,importData{rec+1}.meanCycleForceLeft,'LineWidth', 2, 'color', color(5, :),'LineStyle','--');    
+    plot(1:360, importData{1}.differentialForceLeft, 'LineWidth',0.5, 'color','k');
+
+    grid on, xlim([0,360]), %title("Passive vs "+titles_recs{rec+1}+" force")
     xlabel('Crank Angle [°]'), ylabel('Force[N]');
-    legend('','','Passive', 'tSCS', '', 'Passive - tSCS')
+    %legend('','','', 'Passive', 'tSCS+vol', 'tSCS', 'FontSize', 14)
+    ylim([-80,85]);
+
+    % plot active force
+    subplot(3,2,rec)
+    curve1=importData{rec}.differentialForceLeft + std(importData{rec}.differentialForceLeft);
+    curve2=importData{rec}.differentialForceLeft - std(importData{rec}.differentialForceLeft);
+    inBetween = [curve1; flipud(curve2)]; xAxis = [(1:360)'; flipud((1:360)')];
+    fill(xAxis, inBetween, color(2,:),'LineStyle', 'none', 'FaceAlpha', 0.5); hold on,
+    
+    curve1=importData{rec+1}.differentialForceLeft + std(importData{rec}.differentialForceLeft);
+    curve2=importData{rec+1}.differentialForceLeft - std(importData{rec}.differentialForceLeft);
+    inBetween = [curve1; flipud(curve2)]; xAxis = [(1:360)'; flipud((1:360)')];
+    fill(xAxis, inBetween, color(2,:),'LineStyle', 'none', 'FaceAlpha', 0.5); hold on,
+
+    plot(1:360, importData{1}.differentialForceLeft, 'LineWidth',1, 'color','k'); hold on,
+    plot(1:360, importData{rec}.differentialForceLeft, 'LineWidth',2, 'color', color(5, :));
+    plot(1:360, importData{rec+1}.differentialForceLeft, 'LineWidth',2, 'color', color(5, :),'LineStyle','--')
+
+    grid on, xlim([0,360]), %title("Active force")
+    xlabel('Crank Angle [°]'), ylabel('Force[N]');
+    % legend('','','', 'tSCS + vol', 'tSCS', 'FontSize', 14)
+    ylim([-20,20]);
 
 end 
-%% 
+sgtitle('Force on left pedal during an averaged cycle', 'FontSize', 20);
+
+%% Forces Interpolation Right Pedal
 for rec=1:num_recordings
     [pks_right,locs_right] = findpeaks(importData{rec}.rightAngle, 'MinPeakHeight', 200);
     num_samples_per_cycle = 360;
@@ -244,33 +287,169 @@ for rec=1:num_recordings
     importData{rec}.interpolatedForceRight = interpolated_force_cycles;
     importData{rec}.meanCycleForceRight = mean(importData{rec}.interpolatedForceRight,2);
     importData{rec}.stddevCycleForceRight = std(importData{rec}.interpolatedForceRight,[],2);
-    importData{rec}.differentalForceRight = importData{rec}.meanCycleForceRight - importData{1}.meanCycleForceRight;
-end
-clear interpolated_force_cycles interpolated_force
-figure('Name', 'Force during an averaged cycle - right pedal'); 
-for rec = 2:num_recordings
-    subplot(3,2,rec-1);
+    importData{rec}.differentialForceRight = importData{rec}.meanCycleForceRight - importData{1}.meanCycleForceRight;
+    importData{rec}.stddevDifferentialForceRight = std(importData{rec}.differentialForceRight);
+end 
+figure('Name', 'Force during an averaged cycle - Right pedal'); 
+for rec = 2:2:num_recordings
+    if rec == 2 color = colors{1}; 
+        else if rec == 4 color = colors{2}; 
+            else if rec == 6 color = colors{3};
+            end 
+        end 
+    end
     % if rec == 1 subplot(4,2,rec-1); % per Cecere
     % else subplot(4,2,rec); 
     % end 
+    subplot(3,2,rec-1) 
+
+    % plot passive std dev
     curve1=importData{1}.meanCycleForceRight + importData{1}.stddevCycleForceRight ;
     curve2=importData{1}.meanCycleForceRight - importData{1}.stddevCycleForceRight ;
     inBetween = [curve1; flipud(curve2)]; xAxis = [(1:360)'; flipud((1:360)')];
-    fill(xAxis, inBetween, Yellow(1,:), 'LineStyle', 'none', 'FaceAlpha', 0.3); hold on
-    curve1=importData{rec}.meanCycleForceRight + importData{rec}.stddevCycleForceRight ;
+    fill(xAxis, inBetween, Yellow(1,:), 'LineStyle', 'none', 'FaceAlpha', 0.3);hold on
+    
+    % plot tSCS + vol std dev
+    curve1=importData{rec}.meanCycleForceRight+ importData{rec}.stddevCycleForceRight ;
     curve2=importData{rec}.meanCycleForceRight - importData{rec}.stddevCycleForceRight ;
     inBetween = [curve1; flipud(curve2)]; xAxis = [(1:360)'; flipud((1:360)')];
-    fill(xAxis, inBetween, Blue(2,:), 'LineStyle', 'none', 'FaceAlpha', 0.5);
-
-    plot(importData{1}.meanCycleForceRight,'LineWidth',1.5, 'color', colors{7}(4, :))
-    plot(importData{rec}.meanCycleForceRight,'LineWidth', 2, 'color', colors{2}(5, :))
-    plot(1:360, importData{1}.differentalForceRight, 'LineWidth',0.5, 'color',colors{7}(7, :))
-    plot(1:360, importData{rec}.differentalForceRight, 'LineWidth',1.5,'color', colors{2}(4, :))
-    grid on, xlim([0,360]), title("Passive vs "+titles_recs{rec}+" force")
-    xlabel('Crank Angle [°]'), ylabel('Force[N]');
-    legend('','','Passive', 'tSCS', '', 'Passive - tSCS')
+    fill(xAxis, inBetween, color(2,:),'LineStyle', 'none', 'FaceAlpha', 0.5);
     
+    % plotd tSCS std dev
+    curve1=importData{rec+1}.meanCycleForceRight+ importData{rec}.stddevCycleForceRight ;
+    curve2=importData{rec+1}.meanCycleForceRight - importData{rec}.stddevCycleForceRight ;
+    inBetween = [curve1; flipud(curve2)]; xAxis = [(1:360)'; flipud((1:360)')];
+    fill(xAxis, inBetween, color(2,:),'LineStyle', 'none', 'FaceAlpha', 0.5);
+    
+    % plot lines 
+    plot(1:360,importData{1}.meanCycleForceRight,'LineWidth',1.5, 'color', Yellow(4, :));
+    plot(1:360,importData{rec}.meanCycleForceRight,'LineWidth', 2, 'color', color(5, :));   
+    plot(1:360,importData{rec+1}.meanCycleForceRight,'LineWidth', 2, 'color', color(5, :),'LineStyle','--');    
+    plot(1:360, importData{1}.differentialForceRight, 'LineWidth',0.5, 'color','k');
+
+    grid on, xlim([0,360]), %title("Passive vs "+titles_recs{rec+1}+" force")
+    xlabel('Crank Angle [°]'), ylabel('Force[N]');
+    %legend('','','', 'Passive', 'tSCS+vol', 'tSCS', 'FontSize', 14)
+    ylim([-80,85]);
+
+    % plot active force
+    subplot(3,2,rec)
+    curve1=importData{rec}.differentialForceRight + std(importData{rec}.differentialForceRight);
+    curve2=importData{rec}.differentialForceRight - std(importData{rec}.differentialForceRight);
+    inBetween = [curve1; flipud(curve2)]; xAxis = [(1:360)'; flipud((1:360)')];
+    fill(xAxis, inBetween, color(2,:),'LineStyle', 'none', 'FaceAlpha', 0.5); hold on,
+    
+    curve1=importData{rec+1}.differentialForceRight + std(importData{rec}.differentialForceRight);
+    curve2=importData{rec+1}.differentialForceRight - std(importData{rec}.differentialForceRight);
+    inBetween = [curve1; flipud(curve2)]; xAxis = [(1:360)'; flipud((1:360)')];
+    fill(xAxis, inBetween, color(2,:),'LineStyle', 'none', 'FaceAlpha', 0.5); hold on,
+
+    plot(1:360, importData{1}.differentialForceRight, 'LineWidth',1, 'color','k'); hold on,
+    plot(1:360, importData{rec}.differentialForceRight, 'LineWidth',2, 'color', color(5, :));
+    plot(1:360, importData{rec+1}.differentialForceRight, 'LineWidth',2, 'color', color(5, :),'LineStyle','--')
+
+    grid on, xlim([0,360]), %title("Active force")
+    xlabel('Crank Angle [°]'), ylabel('Force[N]');
+    % legend('','','', 'tSCS + vol', 'tSCS', 'FontSize', 14)
+    ylim([-20,20]);
+
 end 
+sgtitle('Force on right pedal during an averaged cycle', 'FontSize', 20);
+
+%% RMS Left 
+figure('Name','RMS of Active Force');
+plot(-5:354,importData{1}.differentialForceLeft, 'LineWidth',2, 'color',Yellow(2,:)); hold on
+for rec = 2:num_recordings
+    importData{rec}.activeForceRMSLeft = mean(importData{rec}.differentialForceLeft,2);
+    
+    if rec == 1 color = Yellow; 
+        else if rec == 2 color = colors{1}; 
+            else if rec == 4 color = colors{2};
+                else if rec==6 color = colors{3}; 
+                end 
+            end
+        end 
+    end
+    if rem(rec,2)==0
+        errorbar(rec-1, mean(importData{rec}.activeForceRMSLeft),std(importData{rec}.activeForceRMSLeft), ...
+            'o', 'MarkerSize',15, 'MarkerFaceColor', color(2,:), 'LineWidth', 1.5, 'color', color(5,:)); hold on;
+        else if rec == 1 
+            errorbar(rec-1, mean(importData{rec}.activeForceRMSLeft),std(importData{rec}.activeForceRMSLeft), ...
+            'o', 'MarkerSize', 15, 'LineWidth', 1.5, 'color', color(5,:)); hold on; 
+            else if rec > 1
+                errorbar(rec-1, mean(importData{rec}.activeForceRMSLeft),std(importData{rec}.activeForceRMSLeft), ...
+                'o', 'MarkerSize', 15, 'LineWidth', 1.5, 'color', color(5,:), 'LineStyle', '--'); hold on;
+            end 
+        end 
+    end 
+end 
+ylabel('Active Force RMS [N]');
+grid on;
+set(gca, 'XTick', 1:num_recordings, 'XTickLabel', titles_recs(2:end), 'FontSize', 14); xtickangle(45);
+xlim([0.5 6.5]), 
+%ylim([-1,13])
+sgtitle('RMS of active force on left pedal during cycling', 'FontSize', 22);
+%% 
+figure()
+%plot(-5:354,importData{1}.differentialForceLeft, 'LineWidth',2, 'color',Yellow(2,:)); hold on
+rmsMatrix=[];
+for rec = 2:num_recordings
+    rmsMatrix(:,rec-1) =  importData{rec}.activeForceRMSLeft;
+end 
+for rec = 2:num_recordings
+    if rec == 1 color = Yellow; 
+        else if rec == 2 color = colors{1}; 
+            else if rec == 4 color = colors{2};
+                else if rec==6 color = colors{3}; 
+                end 
+            end
+        end 
+    end
+    if rem(rec,2)==0
+        boxplot(rmsMatrix(rec,:),'Positions',rec-1,'BoxStyle','filled', 'Colors',color(5,:),'MedianStyle', 'target'); hold on
+    else
+         boxplot(rmsMatrix(rec,:),'Positions',rec-1, 'BoxStyle','filled', 'Colors', color(3,:),'MedianStyle', 'target'); hold on
+    end 
+end 
+
+ylabel('Active Force RMS [N]');
+grid on;
+set(gca, 'XTick', 1:num_recordings, 'XTickLabel', titles_recs(2:end), 'FontSize', 14); xtickangle(45);
+xlim([0.5 6.5])
+sgtitle('RMS of active force on left pedal during cycling', 'FontSize', 22);
+%% RMS Right 
+figure('Name','RMS of Active Force');
+plot(-5:354,importData{1}.differentialForceRight, 'LineWidth',2, 'color',Yellow(2,:)); hold on
+for rec = 2:num_recordings
+    importData{rec}.activeForceRMSRight = mean(importData{rec}.differentialForceRight,2);
+    
+    if rec == 1 color = Yellow; 
+        else if rec == 2 color = colors{1}; 
+            else if rec == 4 color = colors{2};
+                else if rec==6 color = colors{3}; 
+                end 
+            end
+        end 
+    end
+    if rem(rec,2)==0
+        errorbar(rec-1, mean(importData{rec}.activeForceRMSRight),std(importData{rec}.activeForceRMSRight), ...
+            'o', 'MarkerSize',15, 'MarkerFaceColor', color(2,:), 'LineWidth', 1.5, 'color', color(5,:)); hold on;
+        else if rec == 1 
+            errorbar(rec-1, mean(importData{rec}.activeForceRMSRight),std(importData{rec}.activeForceRMSRight), ...
+            'o', 'MarkerSize', 15, 'LineWidth', 1.5, 'color', color(5,:)); hold on; 
+            else if rec > 1
+                errorbar(rec-1, mean(importData{rec}.activeForceRMSRight),std(importData{rec}.activeForceRMSRight), ...
+                'o', 'MarkerSize', 15, 'LineWidth', 1.5, 'color', color(5,:), 'LineStyle', '--'); hold on;
+            end 
+        end 
+    end 
+end 
+ylabel('Active Force RMS [N]');
+grid on;
+set(gca, 'XTick', 1:num_recordings, 'XTickLabel', titles_recs(2:end), 'FontSize', 14); xtickangle(45);
+xlim([0.5 6.5]), 
+%ylim([-1,13])
+sgtitle('RMS of active force on right pedal during cycling', 'FontSize', 22);
 
 %% Select a period of pedaling, divide in cycles and compute the power
 windows = 360;
@@ -308,9 +487,16 @@ for rec = 1:num_recordings
     importData{rec}.meanCyclePowerLeft = mean(importData{rec}.powerLeft,2);
     importData{rec}.powerPerCycleRight = sum(importData{rec}.powerRight)./length(importData{rec}.powerRight);
 end 
+
 %% Plot Power Data 
 figure('Name', 'Power on left pedal')
 for rec = 2:num_recordings 
+    if rec == 2&&3 color = colors{1}; 
+        else if rec == 4&&5 color = colors{2}; 
+            else if rec == 6&&7 color = colors{3};
+            end 
+        end 
+    end
     subplot(3,2,rec-1)
     % if rec == 1 subplot(4,2,rec-1);
     % else subplot(4,2,rec); 
@@ -318,23 +504,29 @@ for rec = 2:num_recordings
     curve1=importData{1}.powerPerCycleLeft + std(importData{1}.powerPerCycleLeft,[],2);
     curve2=importData{1}.powerPerCycleLeft - std(importData{1}.powerPerCycleLeft,[],2);
     inBetween = [curve1'; flipud(curve2')]; xAxis = [(1:length(curve1))'; flipud((1:length(curve1))')];
-    fill(xAxis, movmean(inBetween,15), Yellow(1,:), 'LineStyle', 'none', 'FaceAlpha', 0.2); hold on
+    fill(xAxis, movmean(inBetween,30), Yellow(1,:), 'LineStyle', 'none', 'FaceAlpha', 0.2); hold on
     
     curve1=importData{rec}.powerPerCycleLeft + std(importData{rec}.powerPerCycleLeft,[],2);
     curve2=importData{rec}.powerPerCycleLeft - std(importData{rec}.powerPerCycleLeft,[],2);
     inBetween = [curve1'; flipud(curve2')]; xAxis = [(1:length(curve1))'; flipud((1:length(curve1))')];
-    fill(xAxis, movmean(inBetween,15), Blue(2,:), 'LineStyle', 'none', 'FaceAlpha', 0.3);
+    fill(xAxis, movmean(inBetween,30), color(2,:), 'LineStyle', 'none', 'FaceAlpha', 0.3);
     
     plot(1:length(importData{1}.powerPerCycleLeft),movmean(importData{1}.powerPerCycleLeft, 10),'LineWidth',1.5, 'Color', colors{7}(4,:));
-    plot(movmean(importData{rec}.powerPerCycleLeft, 10),'LineWidth',2, 'color', colors{2}(6,:));
+    plot(movmean(importData{rec}.powerPerCycleLeft, 10),'LineWidth',2, 'color', color(6,:));
     xlabel('Cycling revolutions'), ylabel('Power')
     title("Passive vs "+titles_recs{rec}+" power"), legend('','','Passive', 'tSCS'), grid on
     
 end 
-
+sgtitle('Power on left pedal during an averaged cycle', 'FontSize', 20);
 %%
 figure('Name', 'Power on right pedal')
 for rec = 2:num_recordings 
+    if rec == 2&&3 color = colors{1}; 
+        else if rec == 4&&5 color = colors{2}; 
+            else if rec == 6&&7 color = colors{3};
+            end 
+        end 
+    end
     subplot(3,2,rec-1)
     % if rec == 1 subplot(4,2,rec-1); % per Cecere
     % else subplot(4,2,rec); 
@@ -342,51 +534,74 @@ for rec = 2:num_recordings
     curve1=importData{1}.powerPerCycleRight + std(importData{1}.powerPerCycleRight,[],2);
     curve2=importData{1}.powerPerCycleRight - std(importData{1}.powerPerCycleRight,[],2);
     inBetween = [curve1'; flipud(curve2')]; xAxis = [(1:length(curve1))'; flipud((1:length(curve1))')];
-    fill(xAxis, movmean(inBetween,15), Yellow(1,:), 'LineStyle', 'none', 'FaceAlpha', 0.2); hold on
+    fill(xAxis, movmean(inBetween,30), Yellow(1,:), 'LineStyle', 'none', 'FaceAlpha', 0.2); hold on
     
     curve1=importData{rec}.powerPerCycleRight + std(importData{rec}.powerPerCycleRight,[],2);
     curve2=importData{rec}.powerPerCycleRight - std(importData{rec}.powerPerCycleRight,[],2);
     inBetween = [curve1'; flipud(curve2')]; xAxis = [(1:length(curve1))'; flipud((1:length(curve1))')];
-    fill(xAxis, movmean(inBetween,15), Blue(2,:), 'LineStyle', 'none', 'FaceAlpha', 0.3); hold on
+    fill(xAxis, movmean(inBetween,15), color(2,:), 'LineStyle', 'none', 'FaceAlpha', 0.3); hold on
     
     plot(1:length(importData{1}.powerPerCycleRight),movmean(importData{1}.powerPerCycleRight, 10),'LineWidth',1.5, 'Color', colors{7}(4,:));
-    plot(movmean(importData{rec}.powerPerCycleRight, 10),'LineWidth',2, 'color', colors{2}(6,:)');
+    plot(movmean(importData{rec}.powerPerCycleRight, 30),'LineWidth',2, 'color', color(6,:)');
     xlabel('Cycling revolutions'), ylabel('Power')
     title("Passive vs "+titles_recs{rec}+" power"), legend('','','Passive', 'tSCS'), grid on
 end 
-%% Boxplots of forces
-figure()
-for rec = 1:num_recordings
-    trial_array = importData{rec}.meanCycleForceLeft;
-    boxplot(trial_array,'Positions', rec, 'Widths', 0.20, 'Colors', colors{2}(5,:));
-    hold on 
-    title('Forces on single cycle - left pedal')
+sgtitle('Power on right pedal during an averaged cycle', 'FontSize', 20);
+
+%% Legend Print
+figure('Name','Legend');
+for rec = 2:2:num_recordings+1
+    if rec == 2 color = colors{5}; 
+        else if rec == 4 color = colors{1}; 
+            else if rec == 6 color = colors{2};
+            else if rec == 8 color = colors{3}; 
+            end 
+            end 
+        end 
+    end
+    if rec > num_recordings
+         plot(0,0,'color', Yellow(5,:), 'LineWidth',2); hold on
+    else 
+        plot(0,0,'color', color(5,:),'LineWidth',2); hold on
+        plot(0,0,'color', color(5,:),'LineStyle','--','LineWidth',2);
+    end
+
 end 
-set(gca, 'XTick', 1:num_recordings, 'XTickLabel', titles_recs); xtickangle(45);
-%%
-figure()
-for rec = 1:num_recordings
-    trial_array = importData{rec}.meanCycleForceRight;
-    boxplot(trial_array,'Positions', rec, 'Widths', 0.20, 'Colors', colors{2}(5,:));
-    hold on 
-    title('Forces on single cycle - right pedal')
-end 
-set(gca, 'XTick', 1:num_recordings, 'XTickLabel', titles_recs); xtickangle(45);
-%% Boxplots of powers
-figure()
-for rec = 1:num_recordings
-    trial_array = importData{rec}.powerPerCycleLeft;
-    boxplot(trial_array,'Positions', rec, 'Widths', 0.20, 'Colors', colors{rec}(5,:));
-    hold on 
-    title('Powers mediated - left pedal')
-end 
-set(gca, 'XTick', 1:num_recordings, 'XTickLabel', titles_recs); xtickangle(45);
-%%
-figure()
-for rec = 1:num_recordings
-    trial_array = importData{rec}.powerPerCycleRight;
-    boxplot(trial_array,'Positions', rec, 'Widths', 0.20, 'Colors', colors{2}(5,:));
-    hold on 
-    title('Powers mediated - right pedal')
-end 
-set(gca, 'XTick', 1:num_recordings, 'XTickLabel', titles_recs); xtickangle(45);
+legend('passive+vol', 'passive+vol final', '20Hz + vol', '20Hz','50Hz+vol', '50Hz','80Hz+vol', '80Hz', 'passive', 'FontSize', 22)
+
+% %% Boxplots of forces
+% figure()
+% for rec = 1:num_recordings
+%     trial_array = importData{rec}.meanCycleForceLeft;
+%     boxplot(trial_array,'Positions', rec, 'Widths', 0.20, 'Colors', colors{2}(5,:));
+%     hold on 
+%     title('Forces on single cycle - left pedal')
+% end 
+% set(gca, 'XTick', 1:num_recordings, 'XTickLabel', titles_recs); xtickangle(45);
+% %%
+% figure()
+% for rec = 1:num_recordings
+%     trial_array = importData{rec}.meanCycleForceRight;
+%     boxplot(trial_array,'Positions', rec, 'Widths', 0.20, 'Colors', colors{2}(5,:));
+%     hold on 
+%     title('Forces on single cycle - right pedal')
+% end 
+% set(gca, 'XTick', 1:num_recordings, 'XTickLabel', titles_recs); xtickangle(45);
+% %% Boxplots of powers
+% figure()
+% for rec = 1:num_recordings
+%     trial_array = importData{rec}.powerPerCycleLeft;
+%     boxplot(trial_array,'Positions', rec, 'Widths', 0.20, 'Colors', colors{rec}(5,:));
+%     hold on 
+%     title('Powers mediated - left pedal')
+% end 
+% set(gca, 'XTick', 1:num_recordings, 'XTickLabel', titles_recs); xtickangle(45);
+% %%
+% figure()
+% for rec = 1:num_recordings
+%     trial_array = importData{rec}.powerPerCycleRight;
+%     boxplot(trial_array,'Positions', rec, 'Widths', 0.20, 'Colors', colors{2}(5,:));
+%     hold on 
+%     title('Powers mediated - right pedal')
+% end 
+% set(gca, 'XTick', 1:num_recordings, 'XTickLabel', titles_recs); xtickangle(45);
