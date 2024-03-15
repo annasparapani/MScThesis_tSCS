@@ -38,74 +38,77 @@ for muscle = 1:8
     for rec = 1:num_recordings
         data_struct{rec}.avgCycleNorm(muscle, :) = data_struct{rec}.averagedCycle(muscle,:) / maxVal;
     end
+    
+        maxVal = max(data_struct_sano{1}.averagedCycle(muscle,:));
+        data_struct_sano{1}.avgCycleNorm(muscle,:) =  data_struct_sano{1}.averagedCycle(muscle,:)/maxVal;
+    
 end
-
-for i = 1:4 
-    maxVal = max(dataS2.avgCycle{i});
-    dataS2.avgCycleNorm{i} = dataS2.avgCycle{i}/maxVal; 
-end 
 %% Right leg plot
-movmeanVal = 200;
+screen_size = get(0, 'ScreenSize'); screen_width = screen_size(3); screen_height = screen_size(4);
+desired_width = screen_width / 2;
+desired_height = screen_height / 1;
+figure('Name','EMG compared with healthy subject','Position', [screen_width/4, screen_height/4, desired_width, desired_height]);
+movmeanVal = 10;
+
 for muscle = 1:2
     for rec = 1:5
         if rec >= 4 
             if rec==4
                angles = linspace(0, 360, size(data_struct{7}.avgCycleNorm, 2));
-               subplot(1,2,muscle), plot(angles,movmean(data_struct{2*rec-1}.avgCycleNorm(rec,:),movmeanVal), 'color',Yellow(4,:),'LineWidth',1.5), 
+               subplot(2,2,muscle), plot(angles,movmean(data_struct{2*rec-1}.avgCycleNorm(muscle,:),movmeanVal), 'color',Yellow(4,:),'LineWidth',1.5), 
                % per cecere: 
-               angles = linspace(0, 360, size(data_struct{2*rec}.avgCycleNorm, 2));
-               subplot(1,2,muscle), plot(angles,movmean(data_struct{2*rec}.avgCycleNorm(muscle,:),movmeanVal), 'k--','LineWidth',0.8), 
-               angles = linspace(0, 360, size(data_struct{2*rec+1}.avgCycleNorm, 2));
-                subplot(1,2,muscle), plot(angles,movmean(data_struct{2*rec+1}.avgCycleNorm(muscle,:),movmeanVal), 'k-.','LineWidth',0.8), 
+               % angles = linspace(0, 360, size(data_struct{2*rec}.avgCycleNorm, 2));
+               % subplot(2,2,muscle), plot(angles,movmean(data_struct{2*rec}.avgCycleNorm(muscle,:),movmeanVal), 'k--','LineWidth', 1), 
+               % angles = linspace(0, 360, size(data_struct{2*rec+1}.avgCycleNorm, 2));
+               % subplot(2,2,muscle), plot(angles,movmean(data_struct{2*rec+1}.avgCycleNorm(muscle,:),movmeanVal), 'k-.','LineWidth',1), 
             end  
             if rec == 5
-                angles = linspace(0, 360, size(dataS2.avgCycleNorm{muscle+2}, 1));
-                subplot(1,2,muscle), plot(angles,dataS2.avgCycleNorm{muscle+2}, 'color','k','LineWidth',1.5), 
+                angles = linspace(0, 360, size(data_struct_sano{1}.avgCycleNorm, 2));
+                subplot(2,2,muscle), plot(angles,data_struct_sano{1}.avgCycleNorm(muscle,:), 'color','k','LineWidth',2), 
             end 
-        else
+            else
             angles = linspace(0, 360, size(data_struct{2 * rec - 1}.avgCycleNorm, 2));
-            subplot(1,2,muscle), plot(angles,movmean(data_struct{2*rec-1}.avgCycleNorm(muscle,:),movmeanVal), 'LineWidth', 2 , 'color',colors{rec}(3,:)), 
+            subplot(2,2,muscle), plot(angles,movmean(data_struct{2*rec-1}.avgCycleNorm(muscle,:),movmeanVal), 'LineWidth', 2 , 'color',colors{rec}(5,:), 'LineStyle','--'), 
             hold on 
             %timecycle=linspace(0, size(data_struct{2*rec}.avgCycleNorm,2)/fs, size(data_struct{2*rec}.avgCycleNorm,2));
             angles = linspace(0, 360, size(data_struct{2 * rec}.avgCycleNorm, 2));
-            subplot(1,2,muscle), plot(angles,movmean(data_struct{2*rec}.avgCycleNorm(muscle,:),movmeanVal), 'LineWidth',1.5, 'color', colors{rec}(6,:))
+            subplot(2,2,muscle), plot(angles,movmean(data_struct{2*rec}.avgCycleNorm(muscle,:),movmeanVal), 'LineWidth',2, 'color', colors{rec}(5,:))
         end 
     end 
-    xlabel('Angle (°)','FontSize', 24), ylabel('EMG amplitude', 'FontSize',22), ylim([0,1]); xlim([0,360]);
+    xlabel('Angle (°)','FontSize', 24), ylabel('EMG amplitude', 'FontSize', 22), ylim([0,1.05]); xlim([0,360]);
     sgtitle('Normalized EMG during an averaged cycling revolution', 'FontSize', 24)
-    title(titles_muscles(muscle), 'FontSize',18); set(gca, 'FontSize', 14); yticks(0:0.2:1); grid on; 
+    title(titles_muscles(muscle), 'FontSize',18); set(gca, 'FontSize', 20); yticks(0:0.2:1); grid on; 
 end 
-%% Left leg plot
-movmeanVal = 200;
+%
 for muscle = 5:6
     for rec = 1:5
         if rec >= 4 
             if rec==4
                angles = linspace(0, 360, size(data_struct{7}.avgCycleNorm, 2));
-               subplot(1,2,muscle-4), plot(angles,movmean(data_struct{2*rec-1}.avgCycleNorm(muscle,:),movmeanVal), 'color',Yellow(4,:),'LineWidth',1.5), 
+               subplot(2,2,muscle-2), plot(angles,movmean(data_struct{2*rec-1}.avgCycleNorm(muscle,:),movmeanVal), 'color',Yellow(4,:),'LineWidth',1.5), 
                % per cecere: 
-               angles = linspace(0, 360, size(data_struct{2*rec}.avgCycleNorm, 2));
-               subplot(1,2,muscle-4), plot(angles,movmean(data_struct{2*rec}.avgCycleNorm(muscle,:),movmeanVal), 'k--','LineWidth',0.8), 
-               angles = linspace(0, 360, size(data_struct{2*rec+1}.avgCycleNorm, 2));
-               subplot(1,2,muscle-4), plot(angles,movmean(data_struct{2*rec+1}.avgCycleNorm(muscle,:),movmeanVal), 'k-.','LineWidth',0.8), 
+               % angles = linspace(0, 360, size(data_struct{2*rec}.avgCycleNorm, 2));
+               % subplot(1,2,muscle), plot(angles,movmean(data_struct{2*rec}.avgCycleNorm(muscle,:),movmeanVal), 'k--','LineWidth',0.8), 
+               % angles = linspace(0, 360, size(data_struct{2*rec+1}.avgCycleNorm, 2));
+               %  subplot(1,2,muscle), plot(angles,movmean(data_struct{2*rec+1}.avgCycleNorm(muscle,:),movmeanVal), 'k-.','LineWidth',0.8), 
             end  
             if rec == 5
-                angles = linspace(0, 360, size(dataS2.avgCycleNorm{muscle-4}, 1));
-                subplot(1,2,muscle-4), plot(angles,dataS2.avgCycleNorm{muscle-4}, 'color','k','LineWidth',1.5), 
+                angles = linspace(0, 360, size(data_struct_sano{1}.avgCycleNorm, 2));
+                subplot(2,2,muscle-2), plot(angles,data_struct_sano{1}.avgCycleNorm(muscle,:), 'color','k','LineWidth',2), 
             end 
         else
             angles = linspace(0, 360, size(data_struct{2 * rec - 1}.avgCycleNorm, 2));
-            subplot(1,2,muscle-4), plot(angles,movmean(data_struct{2*rec-1}.avgCycleNorm(muscle,:),movmeanVal), 'LineWidth', 2 , 'color',colors{rec}(3,:)), 
+            subplot(2,2,muscle-2), plot(angles,movmean(data_struct{2*rec-1}.avgCycleNorm(muscle,:),movmeanVal), 'LineWidth', 2 , 'color',colors{rec}(6,:), 'LineStyle','--'), 
             hold on 
             %timecycle=linspace(0, size(data_struct{2*rec}.avgCycleNorm,2)/fs, size(data_struct{2*rec}.avgCycleNorm,2));
             angles = linspace(0, 360, size(data_struct{2 * rec}.avgCycleNorm, 2));
-            subplot(1,2,muscle-4), plot(angles,movmean(data_struct{2*rec}.avgCycleNorm(muscle,:),movmeanVal), 'LineWidth',1.5, 'color', colors{rec}(6,:))
+            subplot(2,2,muscle-2), plot(angles,movmean(data_struct{2*rec}.avgCycleNorm(muscle,:),movmeanVal), 'LineWidth',2, 'color', colors{rec}(6,:))
         end 
     end 
-    xlabel('Angle (°)','FontSize', 24), ylabel('EMG amplitude', 'FontSize',22), ylim([0,1]); xlim([0,360]);
+    xlabel('Angle (°)','FontSize', 24), ylabel('EMG amplitude', 'FontSize',22), ylim([0,1.05]); xlim([0,360]);
     sgtitle('Normalized EMG during an averaged cycling revolution', 'FontSize', 24)
-    title(titles_muscles(muscle), 'FontSize',18); set(gca, 'FontSize', 14); yticks(0:0.2:1); grid on; 
-end
+    title(titles_muscles(muscle), 'FontSize',18); set(gca, 'FontSize', 20); yticks(0:0.2:1); grid on; 
+end 
 
 %% Print Legend  
 figure()
