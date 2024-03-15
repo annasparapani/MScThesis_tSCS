@@ -37,7 +37,7 @@ public:
 
     // PROTOCOL 3 parameters
     int stimT = 20; //[ms]
-    int ramp_Interval = 3000; // [ms]
+    int ramp_Interval = 2000; // [ms]
 
     // PROTOCOL 5 - triangular stimulation - parameters
     int waveLength=200; //[ms] length of triangular wave

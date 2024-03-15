@@ -240,11 +240,16 @@ void stim_Thread::run(){
 
                         bool check_sent = smpt_send_ll_channel_config(&stimulator1.device, &stimulator1.channels[stim_Channel]);
                     }
+                    if (loop_count%ramp_Interval == 0 && current<current_maxContinuous)
+                    {
+                        current+=current_increment;
+                        cout << "Current: "<< current <<"mA"<< endl;
+                    }
 
-                    if(loop_count%600000 == 0) // after 600s = 10min -> stop stimulation
+                    /*if(loop_count%1200000 == 0) // after 1200s = 20min -> stop stimulation
                     {
                         stimulating = false;
-                    }
+                    }*/
 
                     loop_count++;
                     clock_nanosleep ( CLOCK_MONOTONIC, TIMER_ABSTIME, &t_next, nullptr );

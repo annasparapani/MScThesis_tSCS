@@ -34,7 +34,7 @@ p, li { white-space: pre-wrap; }
    <property name="geometry">
     <rect>
      <x>390</x>
-     <y>360</y>
+     <y>370</y>
      <width>81</width>
      <height>51</height>
     </rect>
@@ -65,7 +65,7 @@ p, li { white-space: pre-wrap; }
    <property name="geometry">
     <rect>
      <x>40</x>
-     <y>300</y>
+     <y>310</y>
      <width>191</width>
      <height>61</height>
     </rect>
@@ -91,7 +91,7 @@ p, li { white-space: pre-wrap; }
    <property name="geometry">
     <rect>
      <x>40</x>
-     <y>370</y>
+     <y>380</y>
      <width>241</width>
      <height>41</height>
     </rect>
@@ -108,7 +108,7 @@ p, li { white-space: pre-wrap; }
    <property name="geometry">
     <rect>
      <x>260</x>
-     <y>300</y>
+     <y>310</y>
      <width>211</width>
      <height>51</height>
     </rect>
@@ -130,10 +130,10 @@ Imposed (mA)</string>
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>219</y>
-     <width>443</width>
-     <height>72</height>
+     <x>50</x>
+     <y>250</y>
+     <width>421</width>
+     <height>51</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -163,22 +163,85 @@ Imposed (mA)</string>
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>179</y>
-     <width>318</width>
-     <height>28</height>
+     <x>50</x>
+     <y>200</y>
+     <width>221</width>
+     <height>41</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_4">
     <item>
      <widget class="QLabel" name="Label_CurrentAmplitude">
       <property name="text">
-       <string>Stimulation Current Amplitude (mA)</string>
+       <string>Stimulation Current
+Amplitude (mA)</string>
       </property>
      </widget>
     </item>
     <item>
      <widget class="QDoubleSpinBox" name="SpinBox_CurrentAmplitude"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="layoutWidget_2">
+   <property name="geometry">
+    <rect>
+     <x>50</x>
+     <y>160</y>
+     <width>221</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_6">
+    <item>
+     <widget class="QLabel" name="Label_startingCurrent">
+      <property name="text">
+       <string>Starting current (mA)</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QDoubleSpinBox" name="SpinBox_startingCurrent"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>290</x>
+     <y>180</y>
+     <width>183</width>
+     <height>62</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_5">
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QLabel" name="Label_CurrentIncrement">
+        <property name="text">
+         <string>Increment (mA)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="Label_Interval">
+        <property name="text">
+         <string>Interval (s)</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <item>
+       <widget class="QDoubleSpinBox" name="SpinBox_CurrentIncrement"/>
+      </item>
+      <item>
+       <widget class="QDoubleSpinBox" name="SpinBox_Interval"/>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
