@@ -1,0 +1,20 @@
+Known issues:
+- The concept of frequent connect / disconnect to the SAGA does not combine well with Wireless communication between the Data Recorder and the Docking Station. Sometimes the WiFi led will blink orange indicating a connection drop. It will regain connection automatically, but additional retries in the user code might be required.
+- Data Repair does not always result in an error-free Poly5 file, even when all missing samples are succesfully retrieved from the API. 
+- Not all examples sync the configuration in the SAGA with the device struct in Matlab. After connect() it is adviced to execute device.getDeviceConfig(); 
+	to ensure the configuration in Matlab is equal to the configuration of the device. Most examples circumvent this issue by executing a factory reset on every run
+	but this is not adviced. Factory reset is an error recovery mode, and not intended to be used frequently. 
+
+SVN Build 4:
+
+Fixes:
+- added getDeviceConfig(); to ChangeDataRecorderInterface.m, RepairDataMemory.m & RepairDataPoly5.m
+
+SVN Build 3:
+
+Fixes:
+- Channel dividers are read at getDeviceConfig().
+
+SVN Build 2:
+
+First release
